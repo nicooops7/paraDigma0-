@@ -22,12 +22,24 @@ public class Region{
 
     public boolean addComuna(String nom, int cod) {
         for (Comuna c : comunas) {
-            if (c.getCodigo()) {
+            if (c.getNombre().equalsIgnoreCase(nom)||c.getCodigo()==cod){
+                System.out.println("La comuna ya existe");
+                return false;
+            }else {
+                comunas.add(c);
+                System.out.println("Se ha añadido la comuna");
+                return true;
             }
         }
     }
 
-    public Comuna findComunaById(int codigo){}
+    public Comuna findComunaById(int codigo){
+        for (Comuna c : comunas){
+            if (c.getCodigo() == codigo){
+                return c;
+            }
+        }
+    }
 
     public Comuna[] getComunas(){}
 

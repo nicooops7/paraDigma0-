@@ -22,7 +22,6 @@ public class EstacionMeteorologica {
     public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor){}
 
     @Override
-
     public String toString(){}
 
     public String[][] getResumenSensores(){}
