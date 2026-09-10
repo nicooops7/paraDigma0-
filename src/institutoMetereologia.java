@@ -18,11 +18,13 @@ public class institutoMetereologia {
     }
     public boolean creaComuna(int codigo, String nombre , int codigoRegion){
         for(Region region : regiones){
+            if(region.getCodigo()==codigoRegion){
+                return region.addComuna(codigo, nombre);
             }
         }
         return false;
     }
 
-    }
+
 
 }
