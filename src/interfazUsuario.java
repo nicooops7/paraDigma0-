@@ -1,10 +1,15 @@
 import java.util.*;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+
 public class interfazUsuario {
     Scanner sc = new Scanner(System.in);
-    public static void main(String[] args){
+    private ArrayList<institutoMetereologia> metereologias;
+    private institutoMetereologia actual;
 
+    public static void main(String[] args){
+        menuPrincipal();
 
 
 
@@ -21,12 +26,28 @@ public class interfazUsuario {
         System.out.println("7. Salir");
     }
     private void crearRegion(){
+
         System.out.println("ingrese codigo y nombre");
         int codigo = sc.nextInt();
+        String nombre = sc.next();
+        boolean x = actual.creaRegion(codigo, nombre);
+        if(x){
+            System.out.println("Region creada exitosamente..");
+        }
+        System.out.println("Region ya existente...");
 
     }
     private void crearComuna(){
 
+        System.out.println(" Ingrese codigo, nombre y codigo de región");
+        int cod = sc.nextInt();
+        String nom = sc.next();
+        int codReg = sc.nextInt();
+        boolean x = actual.creaComuna(cod,nom,codReg);
+        if(x){
+            System.out.println("Comuna Creada exitosamente..");
+        }
+        System.out.println("Comuna ya existente");
     }
     private void crearEstacionMeteorologica(){
 
