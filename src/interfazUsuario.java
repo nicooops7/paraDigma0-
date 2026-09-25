@@ -10,11 +10,6 @@ public class interfazUsuario {
 
     public static void main(String[] args){
         menuPrincipal();
-
-
-
-
-
     }
     private void menuPrincipal(){
         System.out.println("1. Crear región");
@@ -24,7 +19,43 @@ public class interfazUsuario {
         System.out.println("5. Registrar medición");
         System.out.println("6. Generar listados");
         System.out.println("7. Salir");
+
+        int opcion = sc.nextInt();
+
+        switch(opcion){
+            case 1:
+                crearRegion();
+                menuPrincipal();
+                break;
+            case 2:
+                crearComuna();
+                menuPrincipal();
+                break;
+            case 3:
+                crearEstacionMeteorologica();
+                menuPrincipal();
+                break;
+            case 4:
+                instalarSensor();
+                menuPrincipal();
+                break;
+            case 5:
+                registrarMedicion();
+                menuPrincipal();
+                break;
+            case 6:
+                menuListados();
+                menuPrincipal();
+                break;
+            case 7:
+                System.out.println("Programa FInalizado.");
+                break;
+            default:
+                System.out.println("Opción Invalida.");
+                menuPrincipal();
+        }
     }
+
     private void crearRegion(){
 
         System.out.println("ingrese codigo y nombre");
@@ -50,6 +81,7 @@ public class interfazUsuario {
         System.out.println("Comuna ya existente");
     }
     private void crearEstacionMeteorologica(){
+
 
     }
     private void instalarSensor(){
