@@ -1,89 +1,130 @@
 import java.util.*;
-import java.util.ArrayList;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 
 public class interfazUsuario {
     Scanner sc = new Scanner(System.in);
-    private ArrayList<institutoMetereologia> metereologias;
-    private institutoMetereologia actual;
+    private institutoMetereologia instituto;
 
     public static void main(String[] args){
-        menuPrincipal();
+
+        interfazUsuario interfaz = new interfazUsuario();
+
+        interfaz.menuPrincipal();
+
     }
     private void menuPrincipal(){
-        System.out.println("1. Crear región");
-        System.out.println("2. Crear comuna");
-        System.out.println("3. Crear estación meteorológica");
-        System.out.println("4. Instalar sensor");
-        System.out.println("5. Registrar medición");
-        System.out.println("6. Generar listados");
-        System.out.println("7. Salir");
+        instituto = new institutoMetereologia();
 
-        int opcion = sc.nextInt();
+        int opcion;
 
-        switch(opcion){
-            case 1:
-                crearRegion();
-                menuPrincipal();
-                break;
-            case 2:
-                crearComuna();
-                menuPrincipal();
-                break;
-            case 3:
-                crearEstacionMeteorologica();
-                menuPrincipal();
-                break;
-            case 4:
-                instalarSensor();
-                menuPrincipal();
-                break;
-            case 5:
-                registrarMedicion();
-                menuPrincipal();
-                break;
-            case 6:
-                menuListados();
-                menuPrincipal();
-                break;
-            case 7:
-                System.out.println("Programa FInalizado.");
-                break;
-            default:
-                System.out.println("Opción Invalida.");
-                menuPrincipal();
-        }
+        do{
+            System.out.println("1. Crear región");
+            System.out.println("2. Crear comuna");
+            System.out.println("3. Crear estación meteorológica");
+            System.out.println("4. Instalar sensor");
+            System.out.println("5. Registrar medición");
+            System.out.println("6. Generar listados");
+            System.out.println("7. Salir");
+
+            opcion = sc.nextInt();
+
+            while (opcion < 1 || opcion > 7) {
+
+                System.out.print("Opción inválida. Ingrese nuevamente: ");
+
+                opcion = sc.nextInt();
+                sc.nextLine();
+            }
+
+            switch(opcion){
+                case 1:
+                    crearRegion();
+
+                    break;
+                case 2:
+                    crearComuna();
+
+                    break;
+                case 3:
+                    crearEstacionMeteorologica();
+
+                    break;
+                case 4:
+                    instalarSensor();
+
+                    break;
+                case 5:
+                    registrarMedicion();
+
+                    break;
+                case 6:
+                    menuListados();
+
+                    break;
+                case 7:
+                    System.out.println("Programa FInalizado.");
+                    break;
+            }
+
+        } while (opcion != 7);
+
     }
 
     private void crearRegion(){
 
-        System.out.println("ingrese codigo y nombre");
+        System.out.println("ingrese codigo");
         int codigo = sc.nextInt();
+        System.out.println("ingrese nombre");
         String nombre = sc.next();
-        boolean x = actual.creaRegion(codigo, nombre);
+        boolean x = instituto.creaRegion(codigo, nombre);
         if(x){
             System.out.println("Region creada exitosamente..");
         }
-        System.out.println("Region ya existente...");
+        System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
 
     }
     private void crearComuna(){
 
-        System.out.println(" Ingrese codigo, nombre y codigo de región");
+        System.out.println(" Ingrese codigo");
         int cod = sc.nextInt();
+        System.out.println("ingrese nombre");
         String nom = sc.next();
+        System.out.println("ingrese Codigo de la región");
         int codReg = sc.nextInt();
-        boolean x = actual.creaComuna(cod,nom,codReg);
+        boolean x = instituto.creaComuna(cod,nom,codReg);
         if(x){
             System.out.println("Comuna Creada exitosamente..");
         }
-        System.out.println("Comuna ya existente");
+        System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
     }
     private void crearEstacionMeteorologica(){
+        System.out.println("ingrese codigo");
+        String cod = sc.next();
+        System.out.println("ingrese nombre");
+        String nom = sc.next();
+        System.out.println("ingrese longitud");
+        float lon = sc.nextFloat();
+        System.out.println("ingrese latitud");
+        float lat = sc.nextFloat();
+        System.out.println("ingrese altitud");
+        float alt = sc.nextFloat();
+        System.out.println("ingrese codigo de la región");
+        int codReg = sc.nextInt();
+        System.out.println("ingrese codigo de la comuna");
+        int codCom = sc.nextInt();
 
+        boolean x = instituto.creaEstacion(cod,nom,lon,lat,alt,codReg,codCom);
+
+        if(x){
+            System.out.println("Estacion creada exitosamente");
+        } else {
+            System.out.println("No se pudo crear la Estación...");
+        }
 
     }
+
     private void instalarSensor(){
 
     }
