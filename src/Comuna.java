@@ -5,10 +5,12 @@ public class Comuna {
     private int codigo;
     private String nombre;
     private List<EstacionMeteorologica> estaciones;
+    private Region region;
 
     public Comuna(int codigo, String nombre, Region region){
         this.codigo=codigo;
         this.nombre=nombre;
+        this.region=region;
         this.estaciones=new ArrayList<EstacionMeteorologica>();
     }
     public int getCodigo(){
@@ -18,11 +20,19 @@ public class Comuna {
         return nombre;
     }
     public void addEstacion(EstacionMeteorologica estacion){
-        for
+        estaciones.add(estacion);
     }
-    public EstacionMeteorologica findEstacion(String codigo){}
+    public EstacionMeteorologica findEstacionbyId(String codigo){
+        for (EstacionMeteorologica e : estaciones) {
+            String[] datos = e.toString().split(";");
+            if(datos[0].equals(codigo)){
+                return e;
+            }
+        }
+        return null;
+    }
     public Region getRegion(){
-
+        return region;
     }
     public int getCantidadEstaciones(){
         return estaciones.size();
