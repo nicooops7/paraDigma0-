@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 
 public class institutoMetereologia {
@@ -88,6 +89,85 @@ public class institutoMetereologia {
         return false;
     }
 
+
+
+
+    public String[][] listaEstaciones(int codigoRegion, int codigoComuna) {
+        Region regionObjetivo = null;
+        for (Region r : regiones) {
+            if (r.getCodigo() == codigoRegion) {
+                regionObjetivo = r;
+                break;
+            }
+        }
+
+
+        if (regionObjetivo == null) {
+            return new String[0][0];
+        }
+
+        Comuna comunaObjetivo = regionObjetivo.findComunaById(codigoComuna);
+
+        if (comunaObjetivo == null) {
+            return new String[0][0];
+        }
+
+
+        int cantidadEstaciones = 0;
+        for (EstacionMeteorologica est : estaciones) {
+            if (comunaObjetivo.findEstacionById(est.getCodigo()) != null) {
+                cantidadEstaciones++;
+            }
+        }
+
+        if (cantidadEstaciones == 0) {
+            return new String[0][0];
+        }
+
+
+        String[][] matriz = new String[cantidadEstaciones][5];
+        int fila = 0;
+
+        for (EstacionMeteorologica est : estaciones) {
+            if (comunaObjetivo.findEstacionById(est.getCodigo()) != null) {
+                matriz[fila][0] = est.getCodigo();
+                matriz[fila][1] = est.getNombre();
+
+
+                matriz[fila][2] = "(" + est.getLatitud() + "; " + est.getLongitud() + "; " + (int)est.getAltitud() + " m)";
+
+                matriz[fila][3] = String.valueOf(est.getEstado());
+
+
+                matriz[fila][4] = String.valueOf(est.getResumenSensores().length);
+
+                fila++;
+            }
+        }
+        return matriz;
+    }
+
+    public String[][] listaSensores(String codigoEstacion) {
+        for (EstacionMeteorologica estacion : estaciones) {
+            if (estacion.getCodigo().equals(codigoEstacion)) {
+
+                return estacion.getResumenSensores();
+            }
+        }
+
+        return new String[0][0];
+    }
+
+    public String[][] listaMediciones(String codEstacion, String codSensor, LocalDateTime inicio, LocalDateTime fin) {
+        for (EstacionMeteorologica estacion : estaciones) {
+            if (estacion.getCodigo().equals(codEstacion)) {
+
+                return estacion.getMedicionesSensorBetween(codSensor, inicio, fin);
+            }
+        }
+
+        return new String[0][0];
+    }
 
 
 
