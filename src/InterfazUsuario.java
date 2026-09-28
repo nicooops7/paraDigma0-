@@ -1,21 +1,21 @@
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import java.time.LocalDateTime;
 
-
-public class interfazUsuario {
+public class InterfazUsuario {
     Scanner sc = new Scanner(System.in);
-    private institutoMetereologia instituto;
+    private InstitutoMeteorologia instituto;
 
     public static void main(String[] args){
 
-        interfazUsuario interfaz = new interfazUsuario();
+        InterfazUsuario interfaz = new InterfazUsuario();
 
         interfaz.menuPrincipal();
 
     }
     private void menuPrincipal(){
-        instituto = new institutoMetereologia();
+        instituto = new InstitutoMeteorologia();
 
         int opcion;
 
@@ -83,8 +83,8 @@ public class interfazUsuario {
             System.out.println("Region creada exitosamente..");
         }
         System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
-
     }
+
     private void crearComuna(){
 
         System.out.println(" Ingrese codigo");
@@ -99,6 +99,7 @@ public class interfazUsuario {
         }
         System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
     }
+
     private void crearEstacionMeteorologica(){
         System.out.println("ingrese codigo");
         String cod = sc.next();
@@ -122,15 +123,84 @@ public class interfazUsuario {
         } else {
             System.out.println("No se pudo crear la Estación...");
         }
-
     }
 
     private void instalarSensor(){
+        System.out.println("Ingrese codigo");
+        String cod = sc.next();
+        System.out.println("Ingrese marca");
+        String marca = sc.next();
+        System.out.println("Ingrese modelo");
+        String modelo = sc.next();
+        String res;
+        TipoSensor tipo = null;
+        boolean x = false;
+        do{
+            System.out.println("Ingrese el tipo de sensor (humedad, temperatura, presion, viento, precipitacion)");
+            res = sc.next();
 
+            switch(res){
+                case "humedad":
+                    tipo = TipoSensor.HUMEDAD;
+                    x = true;
+                    break;
+                case "temperatura":
+                    tipo = TipoSensor.TEMPERATURA;
+                    x = true;
+                    break;
+                case "presion":
+                    tipo = TipoSensor.PRESION;
+                    x = true;
+                    break;
+                case "viento":
+                    tipo = TipoSensor.VIENTO;
+                    x = true;
+                    break;
+                case "precipitacion":
+                    tipo = TipoSensor.PREPICITACION;
+                    x = true;
+                    break;
+                default:
+                    System.out.println("No valido");
+                    x = false;
+
+            }
+        }while(x == false );
+
+        System.out.println("Ingresa codigo de estacióm");
+        String codigoEstacion = sc.next();
+
+        x = instituto.instalaSensor(cod,marca,modelo,tipo,codigoEstacion);
+        if(x){
+            System.out.println("Sensor instalado correctamente");
+        }else{
+            System.out.println("algun dato ya esta registrado...");
+        }
     }
+
     private void registrarMedicion(){
+        System.out.println("Ingrese codigo de Estacion");
+        String codEstacion = sc.next();
+        System.out.print("Ingrese Fecha y hora (dd/MM/yyyy HH:mm): ");
+        String fechaTexto = sc.nextLine();
 
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        LocalDateTime fechaHora = LocalDateTime.parse(fechaTexto, formato);
+
+        System.out.println("Ingrese valor");
+        Float valor = sc.nextFloat();
+
+        System.out.println("Ingrese codigo de Sensor");
+        String codSensor = sc.next();
+
+        boolean x = instituto.registraMedicion(fechaHora, valor, codEstacion, codSensor);
+        if(x){
+            System.out.println("Medición registrada correctamente");
+        }else{
+            System.out.println("algun dato ya esta registrado...");
+        }
     }
+
     private void menuListados(){
 
     }

@@ -1,13 +1,14 @@
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 
-public class institutoMetereologia {
+public class InstitutoMeteorologia {
     private ArrayList<Region> regiones;
     private ArrayList<EstacionMeteorologica> estaciones;
 
 
 
-    public institutoMetereologia(){
+    public InstitutoMeteorologia(){
         regiones = new ArrayList<>();
         estaciones = new ArrayList<>();
     }
@@ -59,7 +60,7 @@ public class institutoMetereologia {
         for(Region r:regiones){
             Comuna[] comunas = r.getComunas();
             for (Comuna c : comunas ){
-                if(c.findEstacion(cod) != null){
+                if(c.findEstacionById(cod) != null){
                     return false;
                 }
             }
@@ -70,7 +71,7 @@ public class institutoMetereologia {
         return true;
     }
 
-    public boolean instalaSensor(String cod, String nombre, String marca, String modelo, TipoSensor tipo, String codigoEstacion){
+    public boolean instalaSensor(String cod, String marca, String modelo, TipoSensor tipo, String codigoEstacion){
 
         for(Region r : regiones){
 
@@ -78,7 +79,7 @@ public class institutoMetereologia {
 
             for(Comuna c : comunas){
 
-                EstacionMeteorologica estacion = c.findEstacion(codigoEstacion);
+                EstacionMeteorologica estacion = c.findEstacionById(codigoEstacion);
 
                 if(estacion != null){
                     return estacion.instalaSensor(cod,marca,modelo,tipo);
@@ -87,6 +88,20 @@ public class institutoMetereologia {
         }
         return false;
     }
+
+    public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codEstacion, String codSensor){
+        for(Region r : regiones){
+            for(Comuna c : r.getComunas()){
+                EstacionMeteorologica estacion = c.findEstacionById(codEstacion);
+                if(estacion != null){
+                    return estacion.registraMedicion(fechaHora, valor, codSensor);
+                }
+            }
+        }
+        return false;
+    }
+
+
 
 
 
