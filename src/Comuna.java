@@ -22,7 +22,7 @@ public class Comuna {
     public void addEstacion(EstacionMeteorologica estacion){
         estaciones.add(estacion);
     }
-    public EstacionMeteorologica findEstacionbyId(String codigo){
+    public EstacionMeteorologica findEstacionById(String codigo){
         for (EstacionMeteorologica e : estaciones) {
             String[] datos = e.toString().split(";");
             if(datos[0].equals(codigo)){
