@@ -81,8 +81,9 @@ public class InterfazUsuario {
         boolean x = instituto.creaRegion(codigo, nombre);
         if(x){
             System.out.println("Region creada exitosamente..");
+        }else{
+            System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
         }
-        System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
     }
 
     private void crearComuna(){
@@ -96,8 +97,9 @@ public class InterfazUsuario {
         boolean x = instituto.creaComuna(cod,nom,codReg);
         if(x){
             System.out.println("Comuna Creada exitosamente..");
+        }else{
+            System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
         }
-        System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
     }
 
     private void crearEstacionMeteorologica(){
@@ -119,7 +121,7 @@ public class InterfazUsuario {
         boolean x = instituto.creaEstacion(cod,nom,lon,lat,alt,codReg,codCom);
 
         if(x){
-            System.out.println("Estacion creada exitosamente");
+            System.out.println("Estación creada exitosamente");
         } else {
             System.out.println("No se pudo crear la Estación...");
         }
@@ -167,7 +169,7 @@ public class InterfazUsuario {
             }
         }while(x == false );
 
-        System.out.println("Ingresa codigo de estacióm");
+        System.out.println("Ingrese codigo de estación");
         String codigoEstacion = sc.next();
 
         x = instituto.instalaSensor(cod,marca,modelo,tipo,codigoEstacion);
@@ -181,6 +183,9 @@ public class InterfazUsuario {
     private void registrarMedicion(){
         System.out.println("Ingrese codigo de Estacion");
         String codEstacion = sc.next();
+
+        sc.nextLine();
+
         System.out.print("Ingrese Fecha y hora (dd/MM/yyyy HH:mm): ");
         String fechaTexto = sc.nextLine();
 
