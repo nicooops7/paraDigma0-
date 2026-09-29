@@ -150,10 +150,12 @@ public class institutoMetereologia {
         }
         return matriz;
     }
-
     public String[][] listaSensores(String codigoEstacion) {
         for (EstacionMeteorologica estacion : estaciones) {
-            if (estacion.getCodigo().equals(codigoEstacion)) {
+            String[] datosEstacion = estacion.toString().split(";");
+            String codigoEst = datosEstacion[0];
+
+            if (codigoEst.equals(codigoEstacion)) {
 
                 return estacion.getResumenSensores();
             }
@@ -164,7 +166,11 @@ public class institutoMetereologia {
 
     public String[][] listaMediciones(String codEstacion, String codSensor, LocalDateTime inicio, LocalDateTime fin) {
         for (EstacionMeteorologica estacion : estaciones) {
-            if (estacion.getCodigo().equals(codEstacion)) {
+
+            String[] datosEstacion = estacion.toString().split(";");
+            String codigoEst = datosEstacion[0];
+
+            if (codigoEst.equals(codEstacion)) {
 
                 return estacion.getMedicionesSensorBetween(codSensor, inicio, fin);
             }
@@ -172,6 +178,7 @@ public class institutoMetereologia {
 
         return new String[0][0];
     }
+
 
 
 
