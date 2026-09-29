@@ -114,7 +114,7 @@ public class institutoMetereologia {
         for (EstacionMeteorologica est : estaciones) {
 
             String[] datosEstacion = est.toString().split(";");
-            String codigoEst = datosEstacion[0]; // El primer dato es el código
+            String codigoEst = datosEstacion[0];
 
             if (comunaObjetivo.findEstacionById(codigoEst) != null) {
                 cantidadEstaciones++;
@@ -134,13 +134,13 @@ public class institutoMetereologia {
             String codigoEst = datosEstacion[0];
 
             if (comunaObjetivo.findEstacionById(codigoEst) != null) {
-                matriz[fila][0] = datosEstacion[0]; // Código
-                matriz[fila][1] = datosEstacion[1]; // Nombre
+                matriz[fila][0] = datosEstacion[0];
+                matriz[fila][1] = datosEstacion[1];
 
 
                 matriz[fila][2] = "(" + datosEstacion[2] + "; " + datosEstacion[3] + "; " + datosEstacion[4] + " m)";
 
-                matriz[fila][3] = datosEstacion[5]; // Estado
+                matriz[fila][3] = datosEstacion[5];
 
 
                 matriz[fila][4] = String.valueOf(est.getResumenSensores().length);
