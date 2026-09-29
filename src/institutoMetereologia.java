@@ -101,21 +101,22 @@ public class institutoMetereologia {
             }
         }
 
-
         if (regionObjetivo == null) {
             return new String[0][0];
         }
 
         Comuna comunaObjetivo = regionObjetivo.findComunaById(codigoComuna);
-
         if (comunaObjetivo == null) {
             return new String[0][0];
         }
 
-
         int cantidadEstaciones = 0;
         for (EstacionMeteorologica est : estaciones) {
-            if (comunaObjetivo.findEstacionById(est.getCodigo()) != null) {
+
+            String[] datosEstacion = est.toString().split(";");
+            String codigoEst = datosEstacion[0]; // El primer dato es el código
+
+            if (comunaObjetivo.findEstacionById(codigoEst) != null) {
                 cantidadEstaciones++;
             }
         }
@@ -129,14 +130,17 @@ public class institutoMetereologia {
         int fila = 0;
 
         for (EstacionMeteorologica est : estaciones) {
-            if (comunaObjetivo.findEstacionById(est.getCodigo()) != null) {
-                matriz[fila][0] = est.getCodigo();
-                matriz[fila][1] = est.getNombre();
+            String[] datosEstacion = est.toString().split(";");
+            String codigoEst = datosEstacion[0];
+
+            if (comunaObjetivo.findEstacionById(codigoEst) != null) {
+                matriz[fila][0] = datosEstacion[0]; // Código
+                matriz[fila][1] = datosEstacion[1]; // Nombre
 
 
-                matriz[fila][2] = "(" + est.getLatitud() + "; " + est.getLongitud() + "; " + (int)est.getAltitud() + " m)";
+                matriz[fila][2] = "(" + datosEstacion[2] + "; " + datosEstacion[3] + "; " + datosEstacion[4] + " m)";
 
-                matriz[fila][3] = String.valueOf(est.getEstado());
+                matriz[fila][3] = datosEstacion[5]; // Estado
 
 
                 matriz[fila][4] = String.valueOf(est.getResumenSensores().length);
