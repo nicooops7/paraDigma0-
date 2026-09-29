@@ -170,7 +170,7 @@ public class institutoMetereologia {
             String[] datosEstacion = estacion.toString().split(";");
             String codigoEst = datosEstacion[0];
 
-            if (codigoEst.equals(codEstacion)) {
+            if(codigoEst.equals(codEstacion)) {
 
                 return estacion.getMedicionesSensorBetween(codSensor, inicio, fin);
             }
