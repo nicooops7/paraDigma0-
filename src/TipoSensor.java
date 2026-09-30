@@ -3,6 +3,5 @@ public enum TipoSensor {
     TEMPERATURA,
     PRESION,
     VIENTO,
-    PREPICITACION
-
+    PRECIPITACION
 }
