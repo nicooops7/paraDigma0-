@@ -3,7 +3,7 @@
 ## Equipo
 * **Nombre del Equipo:** [ParaDigma0-]
 * **Integrantes:**
-  1. [Estaban Pena]
+  1. [Esteban Pena]
   2. [Joab Vergara]
   3. [Nicolás Parra]
 
