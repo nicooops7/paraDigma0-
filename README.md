@@ -14,9 +14,7 @@ El sistema es una aplicación de consola interactiva escrita en Java. No requier
 ### Opción 1: Ejecución desde IntelliJ IDEA (Recomendado)
 1. Clona este repositorio desde GitHub en tu equipo local:
    https://github.com/nicooops7/paraDigma0-.git
-   ## Descripción del Proyecto
 
-El Sistema de Información Meteorológica es una aplicación de consola en Java desarrollada para una institución que requiere registrar observaciones climáticas y generar listados para diferentes localidades del país. Este primer avance se centra en la estructura territorial y el registro fundamental de los datos, gestionando la creación de regiones, comunas, estaciones meteorológicas, instalación de sensores especializados (temperatura, humedad, presión, viento y precipitación) y el registro inmutable de sus mediciones.
 
 ## Menú de Opciones
 
