@@ -90,8 +90,9 @@ public class InterfazUsuario {
 
         System.out.println(" Ingrese codigo");
         int cod = sc.nextInt();
+        sc.nextLine();
         System.out.println("ingrese nombre");
-        String nom = sc.next();
+        String nom = sc.nextLine();
         System.out.println("ingrese Codigo de la región");
         int codReg = sc.nextInt();
         boolean x = instituto.creaComuna(cod,nom,codReg);
