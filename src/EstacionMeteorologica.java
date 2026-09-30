@@ -57,7 +57,7 @@ public class EstacionMeteorologica {
         return false;
     }
 
-    //Metodo auxiliar
+
     private boolean mismoTipo(Sensor s, TipoSensor tipo){
         return (tipo == TipoSensor.HUMEDAD && s instanceof SensorHumedad) ||
                 (tipo == TipoSensor.TEMPERATURA && s instanceof SensorTemperatura) ||
