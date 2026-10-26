@@ -1,8 +1,11 @@
+package controlador;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 
 public class InstitutoMeteorologia {
+    private static InstitutoMeteorologia instancia;
     private ArrayList<Region> regiones;
     private ArrayList<EstacionMeteorologica> estaciones;
 

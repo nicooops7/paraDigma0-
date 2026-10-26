@@ -1,3 +1,5 @@
+package vista;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -80,9 +82,9 @@ public class InterfazUsuario {
         String nombre = sc.next();
         boolean x = instituto.creaRegion(codigo, nombre);
         if(x){
-            System.out.println("Region creada exitosamente..");
+            System.out.println("modelo.Region creada exitosamente..");
         }else{
-            System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
+            System.out.println("No se pudo crear la modelo.Region, codigo o nombre ya existe...");
         }
     }
 
@@ -96,9 +98,9 @@ public class InterfazUsuario {
         int codReg = sc.nextInt();
         boolean x = instituto.creaComuna(cod,nom,codReg);
         if(x){
-            System.out.println("Comuna Creada exitosamente..");
+            System.out.println("modelo.Comuna Creada exitosamente..");
         }else{
-            System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
+            System.out.println("No se pudo crear la modelo.Comuna, modelo.Region, codigo o nombre ya existe...");
         }
     }
 

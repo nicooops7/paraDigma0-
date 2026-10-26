@@ -1,3 +1,5 @@
+package modelo;
+
 public class Comuna {
     private int codigo;
     private String nombre;
@@ -13,7 +15,7 @@ public class Comuna {
         return nombre;
     }
     public void addEstacion(EstacionMeteorologica estacion){}
-    public EstacionMeteorologica findEstacion(String codigo){}
+    public EstacionMeteorologica findEstacionById(String codigo){}
     public Region getRegion(){}
     public int getCantidadEstaciones(){}
     public int getCantidadEstacionesActivas(){}
