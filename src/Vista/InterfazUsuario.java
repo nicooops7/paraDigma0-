@@ -1,6 +1,7 @@
 package Vista;
 
 import Controlador.InstitutoMeteorologia;
+import Controlador.MeteorologiaException;
 import Modelo.*;
 
 import java.time.LocalDateTime;
@@ -105,11 +106,12 @@ public class InterfazUsuario {
         int codigo = sc.nextInt();
         System.out.println("ingrese nombre");
         String nombre = sc.next();
-        boolean x = instituto.creaRegion(codigo, nombre);
-        if(x){
-            System.out.println("Modelo.Region creada exitosamente..");
+        try {
+            instituto.creaRegion(codigo, nombre);
+            System.out.println("Región creada exitosamente.");
+        } catch (MeteorologiaException e) {
+            System.out.println("Error: " + e.getMessage());
         }
-        else System.out.println("No se pudo crear la Modelo.Region, codigo o nombre ya existe...");
     }
 
     private void crearComuna(){
@@ -121,11 +123,12 @@ public class InterfazUsuario {
         String nom = sc.nextLine();
         System.out.println("ingrese Codigo de la región");
         int codReg = sc.nextInt();
-        boolean x = instituto.creaComuna(cod,nom,codReg);
-        if(x){
-            System.out.println("Modelo.Comuna Creada exitosamente..");
+        try {
+            instituto.creaComuna(cod, nom, codReg);
+            System.out.println("Comuna creada exitosamente.");
+        } catch (MeteorologiaException e) {
+            System.out.println("Error: " + e.getMessage());
         }
-        else System.out.println("No se pudo crear la Modelo.Comuna, Modelo.Region, codigo o nombre ya existe...");
     }
 
     private void crearEstacionMeteorologica(){
@@ -144,12 +147,11 @@ public class InterfazUsuario {
         System.out.println("ingrese codigo de la comuna");
         int codCom = sc.nextInt();
 
-        boolean x = instituto.creaEstacion(cod,nom,lon,lat,alt,codReg,codCom);
-
-        if(x){
-            System.out.println("Estacion creada exitosamente");
-        } else {
-            System.out.println("No se pudo crear la Estación...");
+        try {
+            instituto.creaEstacion(cod, nom, lon, lat, alt, codReg, codCom);
+            System.out.println("Estación creada exitosamente.");
+        } catch (MeteorologiaException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
