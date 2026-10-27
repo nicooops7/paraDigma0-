@@ -1,7 +1,9 @@
 package Modelo;
 
+import Controlador.MeteorologiaException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Region{
     private List<Comuna> comunas;
@@ -22,23 +24,27 @@ public class Region{
         return codigo;
     }
 
-    public boolean addComuna(int cod, String nom) {
+    public void addComuna(int codigo, String nom) throws MeteorologiaException {
+        if (findComunaById(codigo).isPresent()) {
+            throw new MeteorologiaException("Esta región ya tiene una comuna con el código " + codigo);
+        }
+
         for (Comuna c : comunas) {
-            if (c.getNombre().equalsIgnoreCase(nom)||c.getCodigo()==cod){
-                return false;
+            if (c.getNombre().equalsIgnoreCase(nom)) {
+                throw new MeteorologiaException("Esta región ya tiene una comuna con el nombre " + nom);
             }
         }
-        Comuna c = new Comuna(cod, nom, this);
+
+        Comuna c = new Comuna(codigo, nom, this);
         comunas.add(c);
-        return true;
     }
-    public Comuna findComunaById(int codigo){
-        for (Comuna c : comunas){
-            if (c.getCodigo() == codigo){
-                return c;
+    public Optional<Comuna> findComunaById(int codigo) {
+        for (Comuna c : comunas) {
+            if (c.getCodigo() == codigo) {
+                return Optional.of(c);
             }
         }
-        return null;
+        return Optional.empty();
     }
     public Comuna[] getComunas(){
         Comuna[] lista= new  Comuna[comunas.size()];
@@ -47,10 +53,10 @@ public class Region{
         }
         return lista;
     }
-    public int getCantidadEstaciones(){
+    public int getCantidadEstaciones() {
         int total=0;
         for (Comuna c : comunas) {
-            total+=c.getCantidadEstaciones();
+            total += c.getEstaciones().length;
         }
         return total;
     }
