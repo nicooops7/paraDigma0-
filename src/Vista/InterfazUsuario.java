@@ -282,13 +282,13 @@ public class InterfazUsuario {
             return;
         }
 
-        System.out.printf("%-10s %-25s %-15s %-15s", "CÓDIGO", "NOMBRE", "CANT. COMUNAS", "CANT. ESTACIONES");
+        System.out.printf("%-10s %-25s %-15s %-15s%n", "CÓDIGO", "NOMBRE", "CANT. COMUNAS", "CANT. ESTACIONES");
         System.out.println("------------------------------------------------------------------");
         for (String[] fila : regiones) {
-            System.out.printf("%-10s %-25s %-15s %-15s", fila[0], fila[1], fila[2], fila[3]);
+            System.out.printf("%-10s %-25s %-15s %-15s%n", fila[0], fila[1], fila[2], fila[3]);
         }
     }
-    private void listarComunas(){
+    private void listarComunas() {
         System.out.println("COMUNAS");
         System.out.println("---------------------------------------------------------------------------------------------------");
 
@@ -298,10 +298,10 @@ public class InterfazUsuario {
             return;
         }
 
-        System.out.printf("%-10s %-25s %-20s %-20s %-25s", "CÓDIGO", "NOMBRE", "NOMBRE REGIÓN", "CANT. ESTACIONES", "CANT. ESTACIONES ACTIVAS");
+        System.out.printf("%-10s %-25s %-20s %-20s %-25s%n", "CÓDIGO", "NOMBRE", "NOMBRE REGIÓN", "CANT. ESTACIONES", "CANT. ESTACIONES ACTIVAS");
         System.out.println("---------------------------------------------------------------------------------------------------");
         for (String[] fila : comunas) {
-            System.out.printf("%-10s %-25s %-20s %-20s %-25s", fila[0], fila[1], fila[2], fila[3], fila[4]);
+            System.out.printf("%-10s %-25s %-20s %-20s %-25s%n", fila[0], fila[1], fila[2], fila[3], fila[4]);
         }
     }
 
@@ -315,22 +315,24 @@ public class InterfazUsuario {
         sc.nextLine();
 
 
-        String[][] datos = instituto.listaEstaciones(codRegion, codComuna);
+        try {
+            String[][] datos = instituto.listaEstaciones(codRegion, codComuna);
 
-        System.out.println("Estaciones de la comuna " + codComuna);
+            System.out.println("Estaciones de la comuna " + codComuna);
 
-        if (datos.length == 0) {
-            System.out.println("> No existen estaciones registradas para esta búsqueda.");
-        } else {
-            System.out.println("-------------------------------------------------------------------------------------------------");
+            if (datos.length == 0) {
+                System.out.println("No existen estaciones registradas para esta búsqueda.");
+            } else {
+                System.out.println("-------------------------------------------------------------------------------------------------");
+                System.out.printf("%-15s %-20s %-30s %-10s %s%n", "CÓDIGO", "NOMBRE", "UBICACIÓN", "ESTADO", "SENSORES OPERATIVOS");
 
-
-            System.out.printf("%-15s %-20s %-30s %-10s %s%n", "CÓDIGO", "NOMBRE", "UBICACIÓN", "ESTADO", "SENSORES OPERATIVOS");
-
-            for (int i = 0; i < datos.length; i++) {
-                System.out.printf("%-15s %-20s %-30s %-10s %s%n", datos[i][0], datos[i][1], datos[i][2], datos[i][3], datos[i][4]);
+                for (int i = 0; i < datos.length; i++) {
+                    System.out.printf("%-15s %-20s %-30s %-10s %s%n", datos[i][0], datos[i][1], datos[i][2], datos[i][3], datos[i][4]);
+                }
+                System.out.println("-------------------------------------------------------------------------------------------------");
             }
-            System.out.println("-------------------------------------------------------------------------------------------------");
+        } catch (MeteorologiaException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
