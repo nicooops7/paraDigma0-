@@ -25,7 +25,7 @@ public class InterfazUsuario {
         return instance;
     }
 
-    private void menuPrincipal(){
+    public void menuPrincipal(){
         int opcion;
 
         do{
@@ -116,7 +116,7 @@ public class InterfazUsuario {
 
     private void crearComuna(){
 
-        System.out.println(" Ingrese codigo");
+        System.out.println("Ingrese codigo");
         int cod = sc.nextInt();
         sc.nextLine();
         System.out.println("ingrese nombre");

@@ -79,10 +79,10 @@ public class InstitutoMeteorologia {
 
             for(Comuna c : comunas){
 
-                EstacionMeteorologica estacion = c.findEstacionById(codigoEstacion);
+                Optional<EstacionMeteorologica> estacion = c.findEstacionById(codigoEstacion);
 
                 if(estacion != null){
-                    return estacion.instalaSensor(cod,marca,modelo,tipo);
+                    return estacion.get().instalaSensor(cod,marca,modelo,tipo);
                 }
             }
         }
@@ -92,9 +92,9 @@ public class InstitutoMeteorologia {
     public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codEstacion, String codSensor){
         for(Region r : regiones){
             for(Comuna c : r.getComunas()){
-                EstacionMeteorologica estacion = c.findEstacionById(codEstacion);
+                Optional<EstacionMeteorologica> estacion = c.findEstacionById(codEstacion);
                 if(estacion != null){
-                    return estacion.registraMedicion(fechaHora, valor, codSensor);
+                    return estacion.get().registraMedicion(fechaHora, valor, codSensor);
                 }
             }
         }
