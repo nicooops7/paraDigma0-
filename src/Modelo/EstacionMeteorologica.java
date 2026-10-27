@@ -12,6 +12,7 @@ public class EstacionMeteorologica {
     private float latitud;
     private float altitud;
     private Estado estado;
+    private Comuna comuna;
     private List<Sensor> sensores;
 
     public EstacionMeteorologica(String cod, String nombre, float lon,
@@ -22,6 +23,7 @@ public class EstacionMeteorologica {
         this.latitud = lat;
         this.altitud = alt;
         this.estado= Estado.ACTIVO;
+        this.comuna = comuna;
         this.sensores=new ArrayList<>();
     }
     public boolean instalaSensor(String codigo, String marca, String modelo,
@@ -144,4 +146,25 @@ public class EstacionMeteorologica {
         }
         return matriz;
     }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getPosicion() {
+        return "(" + longitud + "; " + latitud + "; " + altitud + " m)";
+    }
+
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public Comuna getComuna() {
+        return comuna;
+    }
+
 }
