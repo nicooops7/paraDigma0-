@@ -4,16 +4,24 @@ import Modelo.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Optional;
 
 
 
 public class InstitutoMeteorologia {
+    private static InstitutoMeteorologia instance;
     private ArrayList<Region> regiones;
     private ArrayList<EstacionMeteorologica> estaciones;
 
-    public InstitutoMeteorologia(){
+    private InstitutoMeteorologia() {
         regiones = new ArrayList<>();
         estaciones = new ArrayList<>();
+    }
+    public static InstitutoMeteorologia getInstance() {
+        if (instance == null) {
+            instance = new InstitutoMeteorologia();
+        }
+        return instance;
     }
 
     public boolean creaRegion(int codigo , String nombre ){
