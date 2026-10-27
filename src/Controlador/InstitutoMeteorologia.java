@@ -238,4 +238,38 @@ public class InstitutoMeteorologia {
 
         return new String[0][0];
     }
+    private Optional<Region> findRegion(int codigo) {
+        for (Region r : regiones) {
+            if (r.getCodigo() == codigo) {
+                return Optional.of(r);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Comuna> findComuna(int codigoRegion, int codigoComuna) {
+        Optional<Region> optionalRegion = findRegion(codigoRegion);
+        if (optionalRegion.isPresent()) {
+            return optionalRegion.get().findComunaById(codigoComuna);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<EstacionMeteorologica> findEstacion(String codigo) {
+        for (EstacionMeteorologica est : estaciones) {
+            if (est.getCodigo().equals(codigo)) {
+                return Optional.of(est);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Sensor> findSensor(String codigoEstacion, String codigoSensor) {
+        Optional<EstacionMeteorologica> optionalEstacion = findEstacion(codigoEstacion);
+        if (optionalEstacion.isPresent()) {
+            return optionalEstacion.get().findSensorById(codigoSensor);
+        }
+        return Optional.empty();
+    }
+
 }
