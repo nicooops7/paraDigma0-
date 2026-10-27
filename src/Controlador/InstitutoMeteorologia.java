@@ -1,5 +1,10 @@
+package Controlador;
+
+import Modelo.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 
 
 public class InstitutoMeteorologia {

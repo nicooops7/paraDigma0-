@@ -1,3 +1,5 @@
+package Modelo;
+
 import java.time.LocalDateTime;
 
 public abstract class Sensor {

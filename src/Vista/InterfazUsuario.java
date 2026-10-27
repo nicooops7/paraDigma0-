@@ -1,3 +1,8 @@
+package Vista;
+
+import Controlador.InstitutoMeteorologia;
+import Modelo.*;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -81,9 +86,9 @@ public class InterfazUsuario {
         String nombre = sc.next();
         boolean x = instituto.creaRegion(codigo, nombre);
         if(x){
-            System.out.println("Region creada exitosamente..");
+            System.out.println("Modelo.Region creada exitosamente..");
         }
-        else System.out.println("No se pudo crear la Region, codigo o nombre ya existe...");
+        else System.out.println("No se pudo crear la Modelo.Region, codigo o nombre ya existe...");
     }
 
     private void crearComuna(){
@@ -97,9 +102,9 @@ public class InterfazUsuario {
         int codReg = sc.nextInt();
         boolean x = instituto.creaComuna(cod,nom,codReg);
         if(x){
-            System.out.println("Comuna Creada exitosamente..");
+            System.out.println("Modelo.Comuna Creada exitosamente..");
         }
-        else System.out.println("No se pudo crear la Comuna, Region, codigo o nombre ya existe...");
+        else System.out.println("No se pudo crear la Modelo.Comuna, Modelo.Region, codigo o nombre ya existe...");
     }
 
     private void crearEstacionMeteorologica(){
@@ -174,7 +179,7 @@ public class InterfazUsuario {
 
         x = instituto.instalaSensor(cod,marca,modelo,tipo,codigoEstacion);
         if(x){
-            System.out.println("Sensor instalado correctamente");
+            System.out.println("Modelo.Sensor instalado correctamente");
         }else{
             System.out.println("algun dato ya esta registrado...");
         }
@@ -195,7 +200,7 @@ public class InterfazUsuario {
         System.out.println("Ingrese valor");
         Float valor = sc.nextFloat();
 
-        System.out.println("Ingrese codigo de Sensor");
+        System.out.println("Ingrese codigo de Modelo.Sensor");
         String codSensor = sc.next();
 
         boolean x = instituto.registraMedicion(fechaHora, valor, codEstacion, codSensor);
@@ -347,7 +352,7 @@ public class InterfazUsuario {
 
         String[][] datos = instituto.listaMediciones(codEstacion, codSensor, inicio, fin);
 
-        System.out.println("Mediciones del Sensor " + codSensor);
+        System.out.println("Mediciones del Modelo.Sensor " + codSensor);
         System.out.println("Período: " + strInicio + " a " + strFin);
 
         if (datos.length == 0) {
