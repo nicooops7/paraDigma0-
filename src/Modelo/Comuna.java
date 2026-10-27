@@ -2,6 +2,7 @@ package Modelo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Comuna {
     private int codigo;
@@ -24,20 +25,23 @@ public class Comuna {
     public void addEstacion(EstacionMeteorologica estacion){
         estaciones.add(estacion);
     }
-    public EstacionMeteorologica findEstacionById(String codigo){
+    public Optional<EstacionMeteorologica> findEstacionById(String codigo) {
         for (EstacionMeteorologica e : estaciones) {
-            String[] datos = e.toString().split(";");
-            if(datos[0].equals(codigo)){
-                return e;
+            if (e.getCodigo().equals(codigo)) {
+                return Optional.of(e);
             }
         }
-        return null;
+        return Optional.empty();
     }
     public Region getRegion(){
         return region;
     }
-    public int getCantidadEstaciones(){
-        return estaciones.size();
+    public EstacionMeteorologica[] getEstaciones() {
+        EstacionMeteorologica[] estaci = new EstacionMeteorologica[estaciones.size()];
+        for (int i = 0; i < this.estaciones.size(); i++) {
+            estaci[i] = this.estaciones.get(i);
+        }
+        return estaci;
     }
     public int getCantidadEstacionesActivas(){
         int activas = 0;
