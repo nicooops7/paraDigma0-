@@ -35,7 +35,17 @@ public class PersistenciaTexto {
         }
     }
 
-    public String[]  escribeRegistros(String nombreArchivo, String[] lineas){
-
+    public void escribeRegistros(String nombreArchivo, String[] lineas) throws MeteorologiaException{
+        Path carpeta = Paths.get("datos");
+        try{
+            if(!Files.exists(carpeta)){
+                Files.createDirectories(carpeta);
+            }
+            Path ruta = carpeta.resolve(nombreArchivo);
+            List<String> listaLineas = List.of(lineas);
+            Files.write(ruta, listaLineas, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new MeteorologiaException("No se pudo escribir el archivo: "+nombreArchivo);
+        }
     }
 }
