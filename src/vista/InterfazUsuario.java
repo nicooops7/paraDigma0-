@@ -1,8 +1,8 @@
-package Vista;
+package vista;
 
-import Controlador.InstitutoMeteorologia;
-import Controlador.MeteorologiaException;
-import Modelo.*;
+import controlador.InstitutoMeteorologia;
+import controlador.MeteorologiaException;
+import modelo.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

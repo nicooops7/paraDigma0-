@@ -1,4 +1,4 @@
-package Modelo;
+package modelo;
 
 public class SensorPresion extends Sensor {
 

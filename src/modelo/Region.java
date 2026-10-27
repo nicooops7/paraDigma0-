@@ -1,6 +1,6 @@
-package Modelo;
+package modelo;
 
-import Controlador.MeteorologiaException;
+import controlador.MeteorologiaException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

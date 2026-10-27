@@ -1,6 +1,6 @@
-package Controlador;
+package controlador;
 
-import Modelo.*;
+import modelo.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
