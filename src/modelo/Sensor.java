@@ -1,6 +1,10 @@
 package modelo;
 
+import controlador.MeteorologiaException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public abstract class Sensor {
     private String codigo;
@@ -8,116 +12,72 @@ public abstract class Sensor {
     private String modelo;
     private Estado estado;
     private EstacionMeteorologica estacion;
+    private List<Medicion> mediciones;
 
-    private Medicion[] mediciones;
-    private int cantidadMediciones;
-
-    protected Sensor(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
+    public Sensor(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
         this.codigo = codigo;
         this.marca = marca;
         this.modelo = modelo;
         this.estacion = estacion;
         this.estado = Estado.ACTIVO;
-        this.mediciones = new Medicion[1000];
-        this.cantidadMediciones = 0;
+        this.mediciones= new ArrayList<>();
     }
+    public abstract TipoSensor getTipo();
+    public abstract String getUnidad();
+    public abstract boolean esValorAdmisible(float valor); //metodo abstracto aunque en el uml aparece static, en la pauta aparece abstract
 
-    public String getCodigo() {
+    public String getCodigo(){
         return codigo;
     }
-
-    public String getMarca() {
+    public String getMarca(){
         return marca;
     }
-
-    public String getModelo() {
+    public String getModelo(){
         return modelo;
     }
-
-    public Estado getEstado() {
+    public Estado getEstado(){
         return estado;
     }
-
-    public void setEstado(Estado estado) {
+    public void setEstado(Estado estado){
         this.estado = estado;
     }
-
-    public boolean addMedicion(LocalDateTime fechaHora, float valor) {
-
-        if (this.estado != Estado.ACTIVO) {
-            return false;
-        }
-
-
-        if (!esValorAdmisible(valor)) {
-            return false;
-        }
-
-
-        for (int i = 0; i < cantidadMediciones; i++) {
-            if (mediciones[i] != null && mediciones[i].getFechaHora().equals(fechaHora)) {
-                return false;
-            }
-        }
-
-
-        if (cantidadMediciones >= mediciones.length) {
-            return false;
-        }
-
-
-        mediciones[cantidadMediciones] = new Medicion(fechaHora, valor);
-        cantidadMediciones++;
-        return true;
+    public EstacionMeteorologica getEstacion(){
+        return estacion;
+    }
+    public List<Medicion> getMediciones(){
+        return mediciones;
     }
 
-    public Medicion getLastMedicion() {
-        if (cantidadMediciones == 0) {
-            return null;
+    public void addMedicion(LocalDateTime fechaHora, float valor) throws MeteorologiaException {
+        if (estado== Estado.INACTIVO){
+            throw new MeteorologiaException("el sensor "+codigo+" se encuentra INACTIVO");
         }
-
-
-        Medicion masReciente = mediciones[0];
-        for (int i = 1; i < cantidadMediciones; i++) {
-            if (mediciones[i] != null && mediciones[i].getFechaHora().isAfter(masReciente.getFechaHora())) {
-                masReciente = mediciones[i];
+        if (!esValorAdmisible(valor)){
+            throw new MeteorologiaException("el valor "+valor+" "+getUnidad()+" no es admisible para un sensor de tipo "+getTipo());
+        }
+        for (Medicion m : mediciones){
+            if (m.getFechaHora().isEqual(fechaHora)){
+                throw new MeteorologiaException("ya existe una medición registrada en la fecha y hora "+fechaHora);
             }
         }
-        return masReciente;
+        mediciones.add(new Medicion(fechaHora, valor));
     }
-
     public Medicion[] getMedicionesBetween(LocalDateTime inicio, LocalDateTime fin) {
-        int contador = 0;
-
-
-        for (int i = 0; i < cantidadMediciones; i++) {
-            if (mediciones[i] != null) {
-                LocalDateTime fh = mediciones[i].getFechaHora();
-
-                if (!fh.isBefore(inicio) && !fh.isAfter(fin)) {
-                    contador++;
-                }
+        List<Medicion> filtradas = new ArrayList<>();
+        for (Medicion m : mediciones) {
+            if ((m.getFechaHora().isEqual(inicio) || m.getFechaHora().isAfter(inicio)) &&
+                    (m.getFechaHora().isEqual(fin) || m.getFechaHora().isBefore(fin))) {
+                filtradas.add(m);
             }
         }
-
-
-        Medicion[] resultado = new Medicion[contador];
-        int indice = 0;
-
-        for (int i = 0; i < cantidadMediciones; i++) {
-            if (mediciones[i] != null) {
-                LocalDateTime fh = mediciones[i].getFechaHora();
-                if (!fh.isBefore(inicio) && !fh.isAfter(fin)) {
-                    resultado[indice] = mediciones[i];
-                    indice++;
-                }
-            }
-        }
-        return resultado;
+        return filtradas.toArray(new Medicion[0]);
     }
 
-
-    public abstract String getUnidad();
-
-    public abstract boolean esValorAdmisible(float valor);
+    public Optional<ResumenMediciones> getResumenBetween(LocalDateTime inicio, LocalDateTime fin) {
+        Medicion[] R = getMedicionesBetween(inicio, fin);
+        if (R.length == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(new ResumenMediciones(R));
+    }
 }

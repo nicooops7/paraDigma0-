@@ -6,6 +6,7 @@ import modelo.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -155,82 +156,54 @@ public class InterfazUsuario {
         }
     }
 
-    private void instalarSensor(){
-        System.out.println("Ingrese codigo");
-        String cod = sc.next();
-        System.out.println("Ingrese marca");
-        String marca = sc.next();
-        System.out.println("Ingrese modelo");
-        String modelo = sc.next();
-        String res;
-        TipoSensor tipo = null;
-        boolean x = false;
-        do{
-            System.out.println("Ingrese el tipo de sensor (humedad, temperatura, presion, viento, precipitacion)");
-            res = sc.next();
+    private void instalarSensor() {
+        System.out.println("\nINSTALAR SENSOR");
+        System.out.println("--------------------------------------------------");
+        System.out.print("Código de estación: ");
+        String codEstacion = sc.nextLine();
+        System.out.print("Código de sensor: ");
+        String codSensor = sc.nextLine();
+        System.out.print("Marca: ");
+        String marca = sc.nextLine();
+        System.out.print("Modelo: ");
+        String modelo = sc.nextLine();
+        System.out.print("Tipo de sensor (HUMEDAD, TEMPERATURA, PRESION, VIENTO, PRECIPITACION): ");
+        TipoSensor tipo = TipoSensor.valueOf(sc.nextLine().toUpperCase());
 
-            switch(res){
-                case "humedad":
-                    tipo = TipoSensor.HUMEDAD;
-                    x = true;
-                    break;
-                case "temperatura":
-                    tipo = TipoSensor.TEMPERATURA;
-                    x = true;
-                    break;
-                case "presion":
-                    tipo = TipoSensor.PRESION;
-                    x = true;
-                    break;
-                case "viento":
-                    tipo = TipoSensor.VIENTO;
-                    x = true;
-                    break;
-                case "precipitacion":
-                    tipo = TipoSensor.PRECIPITACION;
-                    x = true;
-                    break;
-                default:
-                    System.out.println("No valido");
-                    x = false;
-
-            }
-        }while(x == false );
-
-        System.out.println("Ingresa codigo de estacióm");
-        String codigoEstacion = sc.next();
-
-        x = instituto.instalaSensor(cod,marca,modelo,tipo,codigoEstacion);
-        if(x){
-            System.out.println("Modelo.Sensor instalado correctamente");
-        }else{
-            System.out.println("algun dato ya esta registrado...");
+        try {
+            controlador.instalaSensor(codSensor, marca, modelo, tipo, codEstacion);
+            System.out.println("> Sensor instalado correctamente.");
+        } catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("> Error: Tipo de sensor no válido.");
         }
     }
 
-    private void registrarMedicion(){
-        System.out.println("Ingrese codigo de Estacion");
-        String codEstacion = sc.next();
+    private void registrarMedicion() {
+        System.out.println("\nREGISTRAR MEDICIÓN");
+        System.out.println("--------------------------------------------------");
+        System.out.print("Código de estación: ");
+        String codEstacion = sc.nextLine();
+        System.out.print("Código de sensor: ");
+        String codSensor = sc.nextLine();
+        System.out.print("Fecha y hora [dd/MM/yyyy HH:mm]: ");
+        String fechaStr = sc.nextLine();
+        System.out.print("Valor: ");
+        float valor = Float.parseFloat(sc.nextLine());
 
-        sc.nextLine();
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime fechaHora = LocalDateTime.parse(fechaStr, formatter);
 
-        System.out.print("Ingrese Fecha y hora (dd/MM/yyyy HH:mm): ");
-        String fechaTexto = sc.nextLine();
-
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        LocalDateTime fechaHora = LocalDateTime.parse(fechaTexto, formato);
-
-        System.out.println("Ingrese valor");
-        Float valor = sc.nextFloat();
-
-        System.out.println("Ingrese codigo de Modelo.Sensor");
-        String codSensor = sc.next();
-
-        boolean x = instituto.registraMedicion(fechaHora, valor, codEstacion, codSensor);
-        if(x){
-            System.out.println("Medición registrada correctamente");
-        }else{
-            System.out.println("algun dato ya esta registrado...");
+            controlador.registraMedicion(fechaHora, valor, codEstacion, codSensor);
+            System.out.println("> Medición registrada correctamente.");
+        }catch (DateTimeParseException e) {
+            System.out.println("> Error: Formato de fecha u hora incorrecto. Debe ser dd/MM/yyyy HH:mm.");
+        }catch (NumberFormatException e) {
+            System.out.println("> Error: El valor ingresado debe ser un número decimal valido");
+        }catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
         }
     }
 
@@ -391,6 +364,82 @@ public class InterfazUsuario {
                 System.out.printf("%-15s %-10s %-10s %s", datos[i][0], datos[i][1], datos[i][2], datos[i][3]);
             }
             System.out.println("--------------------------------------------------");
+        }
+    }
+    private void listarResumenMediciones() {
+        System.out.println("\nRESUMEN ESTADÍSTICO DE UN SENSOR");
+        System.out.println("--------------------------------------------------");
+        System.out.print("Código de estación: ");
+        String codEstacion = sc.nextLine();
+        System.out.print("Código de sensor  : ");
+        String codSensor = sc.nextLine();
+        System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
+        String inicioStr = sc.nextLine();
+        System.out.print("Fin    [dd/MM/yyyy HH:mm]: ");
+        String finStr = sc.nextLine();
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime inicio = LocalDateTime.parse(inicioStr, formatter);
+            LocalDateTime fin = LocalDateTime.parse(finStr, formatter);
+
+            String[] R = controlador.listaResumenMediciones(codEstacion, codSensor, inicio, fin);
+
+            if (R.length == 0) {
+                System.out.println("> El sensor "+codSensor+" de la estación "+codEstacion+" no registra mediciones en el período indicado");
+                return;
+            }
+
+            System.out.println("\nRESUMEN ESTADÍSTICO DEL SENSOR " + codSensor + " (" + codEstacion + ")");
+            System.out.println("--------------------------------------------------------------------------------");
+            System.out.println("Período: " + inicioStr + " a " + finStr);
+            System.out.printf("Tipo de sensor       : %s\n", R[0]);
+            System.out.printf("Cantidad de mediciones: %s\n", R[1]);
+            System.out.printf("Mínimo               : %-10s (%s)\n", R[2], R[3]);
+            System.out.printf("Máximo               : %-10s (%s)\n", R[4], R[5]);
+            System.out.printf("Promedio             : %s\n", R[6]);
+
+        } catch (DateTimeParseException e) {
+            System.out.println("> Error: Formato de fecha incorrecto.");
+        } catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
+        }
+    }
+    private void listarAlertas() {
+        System.out.println("\nALERTAS DE UNA ESTACIÓN");
+        System.out.println("--------------------------------------------------");
+        System.out.print("Código de estación: ");
+        String codEstacion = sc.nextLine();
+        System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
+        String inicioStr = sc.nextLine();
+        System.out.print("Fin    [dd/MM/yyyy HH:mm]: ");
+        String finStr = sc.nextLine();
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime inicio = LocalDateTime.parse(inicioStr, formatter);
+            LocalDateTime fin = LocalDateTime.parse(finStr, formatter);
+
+            String[][] A = controlador.listaAlertas(codEstacion, inicio, fin);
+
+            if (A.length == 0) {
+                System.out.println("> La estación " + codEstacion + " no registra alertas en el período indicado.");
+                return;
+            }
+
+            System.out.println("\nALERTAS DE LA ESTACIÓN " + codEstacion);
+            System.out.println("--------------------------------------------------------------------------------");
+            System.out.println("Período: " + inicioStr + " a " + finStr);
+            System.out.printf("%-12s %-8s %-8s %-25s %-12s %-10s\n", "FECHA", "HORA", "SENSOR", "FENÓMENO", "VALOR", "NIVEL");
+
+            for (String[] fila : A) {
+                System.out.printf("%-12s %-8s %-8s %-25s %-12s %-10s\n", fila[0], fila[1], fila[2], fila[3], fila[4], fila[5]);
+            }
+
+        } catch (DateTimeParseException e) {
+            System.out.println("> Error: Formato de fecha incorrecto.");
+        } catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
         }
     }
 }

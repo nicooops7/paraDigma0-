@@ -15,6 +15,7 @@ public class EstacionMeteorologica {
     private Estado estado;
     private Comuna comuna;
     private List<Sensor> sensores;
+    private List<AlertaMeteorologica> alertas;
 
     public EstacionMeteorologica(String cod, String nombre, float lon,
                                  float lat, float alt, Comuna comuna) {
@@ -26,6 +27,8 @@ public class EstacionMeteorologica {
         this.estado= Estado.ACTIVO;
         this.comuna = comuna;
         this.sensores=new ArrayList<>();
+        this.alertas= new ArrayList<>();
+
     }
     public boolean instalaSensor(String codigo, String marca, String modelo,
                                  TipoSensor tipo){
@@ -70,17 +73,35 @@ public class EstacionMeteorologica {
                 (tipo == TipoSensor.PRECIPITACION && s instanceof SensorPrecipitacion);
     }
 
-    public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor){
-        if (this.estado== Estado.INACTIVO){
-            return false;
+    public void registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor) throws MeteorologiaException {
+        if (this.estado == Estado.INACTIVO) {
+            throw new MeteorologiaException("La estación "+codigo+" no esta activa");
         }
-        for (Sensor s : sensores){
-            if (s.getCodigo().equalsIgnoreCase(codigoSensor)){
-                return s.addMedicion(fechaHora, valor);
+        Sensor sensor = findSensorById(codigoSensor).orElseThrow(() -> new MeteorologiaException("no existe el sensor "+codigoSensor+" en la estación "+codigo));
+        sensor.addMedicion(fechaHora, valor);
+
+        if (sensor instanceof Alertable) {
+            Alertable alertable = (Alertable) sensor;
+            Optional<NivelAlerta> nivelOpt = alertable.evaluaAlerta(valor);
+
+            if (nivelOpt.isPresent()) {
+                String fenomeno = alertable.getFenomeno(valor);
+                AlertaMeteorologica alerta = new AlertaMeteorologica(fechaHora, valor, nivelOpt.get(), fenomeno, sensor);
+                this.alertas.add(alerta);
             }
         }
-        return false;
     }
+    public AlertaMeteorologica[] getAlertasBetween(LocalDateTime inicio, LocalDateTime fin) {
+        List<AlertaMeteorologica> filtradas = new ArrayList<>();
+        for (AlertaMeteorologica a : alertas) {
+            if ((a.getFechaHora().isEqual(inicio) || a.getFechaHora().isAfter(inicio)) &&
+                    (a.getFechaHora().isEqual(fin) || a.getFechaHora().isBefore(fin))) {
+                filtradas.add(a);
+            }
+        }
+        return filtradas.toArray(new AlertaMeteorologica[0]);
+    }
+
 
     @Override
     public String toString(){

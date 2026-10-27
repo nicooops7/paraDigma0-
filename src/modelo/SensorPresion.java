@@ -7,9 +7,10 @@ public class SensorPresion extends Sensor {
     }
 
     @Override
-    public String getUnidad() {
-        return "hPa";
-    }
+    public TipoSensor getTipo() { return TipoSensor.PRESION; }
+
+    @Override
+    public String getUnidad() { return "hPa"; }
 
     @Override
     public boolean esValorAdmisible(float valor) {

@@ -89,17 +89,16 @@ public class InstitutoMeteorologia {
         return false;
     }
 
-    public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codEstacion, String codSensor){
-        for(Region r : regiones){
-            for(Comuna c : r.getComunas()){
-                Optional<EstacionMeteorologica> estacion = c.findEstacionById(codEstacion);
-                if(estacion != null){
-                    return estacion.get().registraMedicion(fechaHora, valor, codSensor);
-                }
-            }
-        }
-        return false;
+    public void instalaSensor(String cod, String marca, String modelo, TipoSensor tipo, String codigoEstacion) throws MeteorologiaException{
+        EstacionMeteorologica estacion= findEstacion(codigoEstacion).orElseThrow(() -> new MeteorologiaException("No existe una estación con el codigo "+codigoEstacion));
+        estacion.instalaSensor(cod, marca, modelo, tipo);
     }
+
+    public void registraMedicion(LocalDateTime fechaHora, float valor, String codEstacion, String codSensor) throws MeteorologiaException {
+        EstacionMeteorologica estacion= findEstacion(codEstacion).orElseThrow(() -> new MeteorologiaException("No existe una estación con el codigo "+codEstacion));
+        estacion.registraMedicion(fechaHora, valor, codSensor);
+    }
+
     public String[][] listaRegiones(){
         if (regiones==null||regiones.isEmpty()){
             return new String[0][0];
@@ -232,5 +231,52 @@ public class InstitutoMeteorologia {
         }
         return Optional.empty();
     }
+    public String[] listaResumenMediciones(String codigoEstacion, String codigoSensor, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
+        if (fin.isBefore(inicio)) {
+            throw new MeteorologiaException("La fecha y hora de término (" +fin+ ") es anterior a la de inicio (" +inicio+ ")");
+        }
+        EstacionMeteorologica estacion = findEstacion(codigoEstacion).orElseThrow(() -> new MeteorologiaException("No existe una estación con el código "+codigoEstacion));
 
+        Sensor sensor = estacion.findSensorById(codigoSensor).orElseThrow(() -> new MeteorologiaException("No existe el sensor "+codigoSensor+" en la estación "+codigoEstacion));
+
+        Optional<ResumenMediciones> resumenOpt = sensor.getResumenBetween(inicio, fin);
+        if (!resumenOpt.isPresent()) {
+            return new String[0];
+        }
+
+        ResumenMediciones r = resumenOpt.get();
+        String unidad = sensor.getUnidad();
+
+        return new String[] {
+                sensor.getTipo().toString(),
+                String.valueOf(r.getCantidad()),
+                r.getMinimo().getValor() + " " + unidad,
+                r.getMinimo().getFechaHora().toString(),
+                r.getMaximo().getValor() + " " + unidad,
+                r.getMaximo().getFechaHora().toString(),
+                String.format("%.1f %s", r.getPromedio(), unidad)
+        };
+    }
+    public String[][] listaAlertas(String codigoEstacion, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
+        if (fin.isBefore(inicio)) {
+            throw new MeteorologiaException("La fecha y hora de término (" + fin + ") es anterior a la de inicio (" + inicio + ").");
+        }
+
+        EstacionMeteorologica estacion = findEstacion(codigoEstacion)
+                .orElseThrow(() -> new MeteorologiaException("No existe una estación con el código " + codigoEstacion + "."));
+
+        AlertaMeteorologica[] alertas = estacion.getAlertasBetween(inicio, fin);
+        String[][] matriz = new String[alertas.length][6];
+
+        for (int i = 0; i < alertas.length; i++) {
+            AlertaMeteorologica a = alertas[i];
+            matriz[i][0]= a.getFechaHora().toLocalDate().toString();
+            matriz[i][1]= a.getFechaHora().toLocalTime().toString();
+            matriz[i][2]= a.getSensor().getCodigo();
+            matriz[i][3] = a.getFenomeno();
+            matriz[i][4] = a.getValor() + " " + a.getSensor().getUnidad();
+            matriz[i][5] = a.getNivel().toString();
+        }
+        return matriz;
+    }
 }
