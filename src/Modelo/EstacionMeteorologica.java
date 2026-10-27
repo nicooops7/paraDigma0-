@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EstacionMeteorologica {
     private String codigo;
@@ -61,7 +62,6 @@ public class EstacionMeteorologica {
         return false;
     }
 
-    //Metodo auxiliar
     private boolean mismoTipo(Sensor s, TipoSensor tipo){
         return (tipo == TipoSensor.HUMEDAD && s instanceof SensorHumedad) ||
                 (tipo == TipoSensor.TEMPERATURA && s instanceof SensorTemperatura) ||
@@ -145,6 +145,15 @@ public class EstacionMeteorologica {
             matriz[i][3]= sensorEncontrado.getUnidad();
         }
         return matriz;
+    }
+
+    public Optional<Sensor> findSensorById(String codigo) {
+        for (Sensor s : sensores) {
+            if (s.getCodigo().equalsIgnoreCase(codigo)) {
+                return Optional.of(s);
+            }
+        }
+        return Optional.empty();
     }
 
     public String getCodigo() {
