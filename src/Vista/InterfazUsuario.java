@@ -11,17 +11,20 @@ import java.util.*;
 public class InterfazUsuario {
     Scanner sc = new Scanner(System.in);
     private InstitutoMeteorologia instituto;
+    private static InterfazUsuario instance;
 
-    public static void main(String[] args){
-
-        InterfazUsuario interfaz = new InterfazUsuario();
-
-        interfaz.menuPrincipal();
-
+    private InterfazUsuario() {
+        instituto = InstitutoMeteorologia.getInstance();
     }
-    private void menuPrincipal(){
-        instituto = new InstitutoMeteorologia();
 
+    public static InterfazUsuario getInstance() {
+        if (instance == null) {
+            instance = new InterfazUsuario();
+        }
+        return instance;
+    }
+
+    private void menuPrincipal(){
         int opcion;
 
         do{
@@ -30,13 +33,17 @@ public class InterfazUsuario {
             System.out.println("3. Crear estación meteorológica");
             System.out.println("4. Instalar sensor");
             System.out.println("5. Registrar medición");
-            System.out.println("6. Generar listados");
-            System.out.println("7. Salir");
+            System.out.println("6. Cambiar estado de sensor");
+            System.out.println("7. Generar listados");
+            System.out.println("8. Cargar datos");
+            System.out.println("9. Guardar datos");
+            System.out.println("10. Salir");
+            System.out.print("Opción: ");
 
             opcion = sc.nextInt();
             sc.nextLine();
 
-            while (opcion < 1 || opcion > 7) {
+            while (opcion < 1 || opcion > 10) {
 
                 System.out.print("Opción inválida. Ingrese nuevamente: ");
 
@@ -44,38 +51,52 @@ public class InterfazUsuario {
                 sc.nextLine();
             }
 
-            switch(opcion){
+            switch (opcion) {
                 case 1:
                     crearRegion();
-
                     break;
                 case 2:
                     crearComuna();
-
                     break;
                 case 3:
                     crearEstacionMeteorologica();
-
                     break;
                 case 4:
                     instalarSensor();
-
                     break;
                 case 5:
                     registrarMedicion();
-
                     break;
                 case 6:
-                    menuListados();
-
+                    cambiarEstadoSensor();
                     break;
                 case 7:
-                    System.out.println("Programa FInalizado.");
+                    menuListados();
+                    break;
+                case 8:
+                    cargarDatos();
+                    break;
+                case 9:
+                    guardarDatos();
+                    break;
+                case 10:
+                    salir();
                     break;
             }
+        } while (opcion != 10);
 
-        } while (opcion != 7);
+    }
 
+    private void salir() {
+    }
+
+    private void guardarDatos() {
+    }
+
+    private void cargarDatos() {
+    }
+
+    private void cambiarEstadoSensor() {
     }
 
     private void crearRegion(){
