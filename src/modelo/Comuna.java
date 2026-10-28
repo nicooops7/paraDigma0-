@@ -46,8 +46,7 @@ public class Comuna {
     public int getCantidadEstacionesActivas(){
         int activas = 0;
         for (EstacionMeteorologica e : estaciones) {
-            String[] datos = e.toString().split(";");
-            if (datos[5].equalsIgnoreCase("ACTIVO")) {
+            if (e.getEstado() == Estado.ACTIVO) {
                 activas++;
             }
         }

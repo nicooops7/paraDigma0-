@@ -1,5 +1,7 @@
 package modelo;
 
+import controlador.MeteorologiaException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,47 +32,59 @@ public class EstacionMeteorologica {
         this.alertas= new ArrayList<>();
 
     }
-    public boolean instalaSensor(String codigo, String marca, String modelo,
-                                 TipoSensor tipo){
+    public void instalaSensor(String codigo, String marca, String modelo,
+                              TipoSensor tipo) throws MeteorologiaException {
+        if (estado == Estado.INACTIVO) {
+            throw new MeteorologiaException("La estación " + this.codigo + " no está activa.");
+        }
         for (Sensor s : sensores) {
-            if(s.getCodigo().equals(codigo)){
-                return false;
+            if (s.getCodigo().equals(codigo)) {
+                throw new MeteorologiaException("La estación " + this.codigo
+                        + " ya tiene un sensor con el código " + codigo + ".");
             }
-            if(s.getEstado()==Estado.ACTIVO && mismoTipo(s, tipo)){
-                return false;
+            if (s.getEstado() == Estado.ACTIVO && s.getTipo() == tipo) {
+                throw new MeteorologiaException("La estación " + this.codigo
+                        + " ya tiene un sensor ACTIVO de tipo " + tipo
+                        + " (" + s.getCodigo() + ").");
             }
         }
-        Sensor nuevoSensor= null;
+
+        Sensor nuevo;
         switch (tipo) {
-            case HUMEDAD:
-                nuevoSensor=new SensorHumedad(codigo, marca, modelo, this);
-                break;
-            case TEMPERATURA:
-                nuevoSensor=new SensorTemperatura(codigo, marca, modelo, this);
-                break;
-            case PRESION:
-                nuevoSensor=new SensorPresion(codigo, marca, modelo, this);
-                break;
-            case VIENTO:
-                nuevoSensor=new SensorViento(codigo, marca, modelo, this);
-                break;
-            case PRECIPITACION:
-                nuevoSensor=new SensorPrecipitacion(codigo, marca, modelo, this);
-                break;
+            case HUMEDAD -> nuevo = new SensorHumedad(codigo, marca, modelo, this);
+            case TEMPERATURA -> nuevo = new SensorTemperatura(codigo, marca, modelo, this);
+            case PRESION -> nuevo = new SensorPresion(codigo, marca, modelo, this);
+            case VIENTO -> nuevo = new SensorViento(codigo, marca, modelo, this);
+            case PRECIPITACION -> nuevo = new SensorPrecipitacion(codigo, marca, modelo, this);
+            default -> throw new IllegalArgumentException("Tipo no válido");
         }
-        if(nuevoSensor!=null){
-            sensores.add(nuevoSensor);
-            return true;
-        }
-        return false;
+        sensores.add(nuevo);
     }
 
-    private boolean mismoTipo(Sensor s, TipoSensor tipo){
-        return (tipo == TipoSensor.HUMEDAD && s instanceof SensorHumedad) ||
-                (tipo == TipoSensor.TEMPERATURA && s instanceof SensorTemperatura) ||
-                (tipo == TipoSensor.PRESION && s instanceof SensorPresion) ||
-                (tipo == TipoSensor.VIENTO && s instanceof SensorViento) ||
-                (tipo == TipoSensor.PRECIPITACION && s instanceof SensorPrecipitacion);
+    public void cambiaEstadoSensor(String codigoSensor, Estado nuevoEstado)
+            throws MeteorologiaException {
+        Sensor sensor = findSensorById(codigoSensor).orElseThrow(() ->
+                new MeteorologiaException("No existe el sensor " + codigoSensor
+                        + " en la estación " + codigo + "."));
+        if (sensor.getEstado() == nuevoEstado) {
+            throw new MeteorologiaException("El sensor " + codigoSensor
+                    + " ya se encuentra en estado " + nuevoEstado + ".");
+        }
+        if (nuevoEstado == Estado.ACTIVO) {
+            for (Sensor otro : sensores) {
+                if (otro != sensor && otro.getEstado() == Estado.ACTIVO
+                        && otro.getTipo() == sensor.getTipo()) {
+                    throw new MeteorologiaException("No es posible activar el sensor "
+                            + codigoSensor + ": la estación ya tiene activo el sensor "
+                            + otro.getCodigo() + " de tipo " + sensor.getTipo() + ".");
+                }
+            }
+        }
+        sensor.setEstado(nuevoEstado);
+    }
+
+    public Sensor[] getSensores() {
+        return sensores.toArray(new Sensor[0]);
     }
 
     public void registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor) throws MeteorologiaException {
@@ -99,7 +113,10 @@ public class EstacionMeteorologica {
                 filtradas.add(a);
             }
         }
-        return filtradas.toArray(new AlertaMeteorologica[0]);
+        AlertaMeteorologica[] resultado = filtradas.toArray(new AlertaMeteorologica[0]);
+        java.util.Arrays.sort(resultado,
+                java.util.Comparator.comparing(AlertaMeteorologica::getFechaHora));
+        return resultado;
     }
 
 
@@ -109,31 +126,48 @@ public class EstacionMeteorologica {
     }
 
     public String[][] getResumenSensores() {
+
         if (sensores.isEmpty()) {
             return new String[0][0];
         }
 
         String[][] matriz = new String[sensores.size()][7];
-        DateTimeFormatter formatoFecha= DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        DateTimeFormatter formatoFecha =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         for (int i = 0; i < sensores.size(); i++) {
-            Sensor s= sensores.get(i);
 
-            matriz[i][0]= s.getCodigo();
-            matriz[i][1]= s.getClass().getSimpleName();
-            matriz[i][2]= s.getMarca();
+            Sensor s = sensores.get(i);
+
+            matriz[i][0] = s.getCodigo();
+            matriz[i][1] = s.getTipo().toString();
+            matriz[i][2] = s.getMarca();
             matriz[i][3] = s.getModelo();
             matriz[i][4] = s.getUnidad();
             matriz[i][5] = s.getEstado().toString();
 
-            Medicion ultima= s.getLastMedicion();
-            if (ultima!= null) {
-                String fechaStr= ultima.getFechaHora().format(formatoFecha);
-                matriz[i][6]= fechaStr+" "+ultima.getValor()+" "+s.getUnidad();
-            }else{
-                matriz[i][6]= "Sin mediciones";
+            Medicion[] mediciones = s.getMediciones();
+
+            if (mediciones.length > 0) {
+
+                // La última medición es la más reciente
+                Medicion ultima = mediciones[mediciones.length - 1];
+
+                String fechaStr =
+                        ultima.getFechaHora().format(formatoFecha);
+
+                matriz[i][6] =
+                        fechaStr + " " +
+                                ultima.getValor() + " " +
+                                s.getUnidad();
+
+            } else {
+
+                matriz[i][6] = "Sin mediciones";
             }
         }
+
         return matriz;
     }
 

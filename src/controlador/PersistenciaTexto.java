@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PersistenciaTexto {
     private static PersistenciaTexto instancia;
-    public static String SEPARADOR = ";";
+    public static final String SEPARADOR = ";";
 
     private PersistenciaTexto(){}
 
@@ -23,15 +23,19 @@ public class PersistenciaTexto {
 
 
 
-    public String[] leeRegistros(String nombreArchivo) throws MeteorologiaException{
-        Path ruta = Paths.get("datos" , nombreArchivo);
-        try{
-            List<String> lineasLista = Files.readAllLines(ruta, StandardCharsets.UTF_8);
-            return lineasLista.toArray(new String[0]);
-        }catch(NoSuchFileException e){
-            throw new MeteorologiaException("No se encontró el archivo" +nombreArchivo+".");
-        }catch (IOException e){
-            throw new MeteorologiaException("No fue posible leer el archivo" +nombreArchivo+".");
+    public String[][] leeRegistros(String nombreArchivo) throws MeteorologiaException {
+        Path ruta = Paths.get("datos", nombreArchivo);
+        try {
+            List<String> lineas = Files.readAllLines(ruta, StandardCharsets.UTF_8);
+            String[][] datos = new String[lineas.size()][];
+            for (int i = 0; i < lineas.size(); i++) {
+                datos[i] = lineas.get(i).split(SEPARADOR, -1);
+            }
+            return datos;
+        } catch (NoSuchFileException e) {
+            throw new MeteorologiaException("No se encontró el archivo " + nombreArchivo + ".");
+        } catch (IOException e) {
+            throw new MeteorologiaException("No fue posible leer el archivo " + nombreArchivo + ".");
         }
     }
 
@@ -45,7 +49,7 @@ public class PersistenciaTexto {
             List<String> listaLineas = List.of(lineas);
             Files.write(ruta, listaLineas, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new MeteorologiaException("No se pudo escribir el archivo: "+nombreArchivo);
+            throw new MeteorologiaException("No fue posible escribir el archivo "+nombreArchivo);
         }
     }
 }

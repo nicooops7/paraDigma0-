@@ -55,6 +55,9 @@ public class InstitutoMeteorologia {
     }
 
     public void creaEstacion(String cod, String nombre, float lon, float lat, float alt, int codRegion, int codComuna) throws MeteorologiaException{
+        if (findEstacion(cod).isPresent()) {
+            throw new MeteorologiaException("Ya existe una estación con el código " + cod + ".");
+        }
         Optional<Region> regionOpt = findRegion(codRegion);
         if (!regionOpt.isPresent()) {
             throw new MeteorologiaException("No existe una región con el codigo "+codRegion+".");
@@ -66,9 +69,6 @@ public class InstitutoMeteorologia {
             throw new MeteorologiaException("No existe comuna con el codigo "+codComuna+ " en la region "+region.getNombre()+".");
         }
         Comuna comuna = comunaOpt.get();
-        if(findEstacion(cod).isPresent()){
-            throw new MeteorologiaException("Ya existe una estación con el codigo "+cod+".");
-        }
 
         EstacionMeteorologica estacion = new EstacionMeteorologica(cod, nombre, lon, lat, alt, comuna);
         comuna.addEstacion(estacion);
@@ -87,7 +87,7 @@ public class InstitutoMeteorologia {
     public void registraMedicion(LocalDateTime fechaHora, float valor, String codEstacion, String codSensor) throws MeteorologiaException{
         Optional<EstacionMeteorologica> estOpt =findEstacion(codEstacion);
         if(!estOpt.isPresent()){
-            throw new MeteorologiaException("No existe una estacióncon el codigo "+codEstacion+".");
+            throw new MeteorologiaException("No existe una estación con el código "+codEstacion+".");
         }
         EstacionMeteorologica estacion = estOpt.get();
         estacion.registraMedicion(fechaHora, valor, codSensor);
@@ -101,111 +101,145 @@ public class InstitutoMeteorologia {
 
     public void cargaDatos() throws MeteorologiaException {
         if (!regiones.isEmpty() || !estaciones.isEmpty()) {
-            throw new MeteorologiaException("La carga de datos solo puede realizarse cuando no existen datos registrados.");
+            throw new MeteorologiaException(
+                    "La carga de datos solo puede realizarse cuando no existen datos registrados.");
         }
 
-        PersistenciaTexto persistencia = PersistenciaTexto.getInstance();
-        List<String[]> sensoresConEstado = new ArrayList<>();
-
+        PersistenciaTexto p = PersistenciaTexto.getInstance();
         try {
-            String[] lineasRegiones = persistencia.leeRegistros("regiones.txt");
-            for (int i = 0; i < lineasRegiones.length; i++) {
-                String[] partes = lineasRegiones[i].split(PersistenciaTexto.SEPARADOR);
-                if (partes.length != 2) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo regiones.txt: formato inválido. No se cargó ningún dato.");
-                }
+            // Leer los cinco archivos antes de modificar el sistema.
+            String[][] lineasReg = p.leeRegistros("regiones.txt");
+            String[][] lineasCom = p.leeRegistros("comunas.txt");
+            String[][] lineasEst = p.leeRegistros("estaciones.txt");
+            String[][] lineasSen = p.leeRegistros("sensores.txt");
+            String[][] lineasMed = p.leeRegistros("mediciones.txt");
+
+            for (int i = 0; i < lineasReg.length; i++) {
+                String[] v = lineasReg[i];
+                if (v.length != 2) throw new IllegalArgumentException(
+                        "Línea " + (i + 1) + " del archivo regiones.txt: formato inválido.");
                 try {
-                    creaRegion(Integer.parseInt(partes[0].trim()), partes[1].trim());
-                } catch (Exception e) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo regiones.txt: " + (e.getMessage() != null ? e.getMessage() : "Error") + " No se cargó ningún dato.");
+                    creaRegion(Integer.parseInt(v[0].trim()), v[1].trim());
+                } catch (RuntimeException | MeteorologiaException e) {
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo regiones.txt: " + e.getMessage() + " No se cargó ningún dato.");
                 }
             }
-
-            String[] lineasComunas = persistencia.leeRegistros("comunas.txt");
-            for (int i = 0; i < lineasComunas.length; i++) {
-                String[] partes = lineasComunas[i].split(PersistenciaTexto.SEPARADOR);
-                if (partes.length != 3) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo comunas.txt: formato inválido. No se cargó ningún dato.");
-                }
+            for (int i = 0; i < lineasCom.length; i++) {
+                String[] v = lineasCom[i];
+                if (v.length != 3) throw new IllegalArgumentException(
+                        "Línea " + (i + 1) + " del archivo comunas.txt: formato inválido.");
                 try {
-                    creaComuna(Integer.parseInt(partes[1].trim()), partes[2].trim(), Integer.parseInt(partes[0].trim()));
-                } catch (Exception e) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo comunas.txt: " + (e.getMessage() != null ? e.getMessage() : "Error") + " No se cargó ningún dato.");
+                    creaComuna(Integer.parseInt(v[1].trim()), v[2].trim(), Integer.parseInt(v[0].trim()));
+                } catch (RuntimeException | MeteorologiaException e) {
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo comunas.txt: " + e.getMessage() + " No se cargó ningún dato.");
                 }
             }
-
-            String[] lineasEstaciones = persistencia.leeRegistros("estaciones.txt");
-            for (int i = 0; i < lineasEstaciones.length; i++) {
-                String[] partes = lineasEstaciones[i].split(PersistenciaTexto.SEPARADOR);
-                if (partes.length != 7) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo estaciones.txt: formato inválido. No se cargó ningún dato.");
-                }
+            for (int i = 0; i < lineasEst.length; i++) {
+                String[] v = lineasEst[i];
+                if (v.length != 7) throw new IllegalArgumentException(
+                        "Línea " + (i + 1) + " del archivo estaciones.txt: formato inválido.");
                 try {
-                    creaEstacion(partes[0].trim(), partes[1].trim(), Float.parseFloat(partes[2].trim()),
-                            Float.parseFloat(partes[3].trim()), Float.parseFloat(partes[4].trim()),
-                            Integer.parseInt(partes[5].trim()), Integer.parseInt(partes[6].trim()));
-                } catch (Exception e) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo estaciones.txt: " + (e.getMessage() != null ? e.getMessage() : "Error") + " No se cargó ningún dato.");
+                    creaEstacion(v[0].trim(), v[1].trim(), Float.parseFloat(v[2].trim()),
+                            Float.parseFloat(v[3].trim()), Float.parseFloat(v[4].trim()),
+                            Integer.parseInt(v[5].trim()), Integer.parseInt(v[6].trim()));
+                } catch (RuntimeException | MeteorologiaException e) {
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo estaciones.txt: " + e.getMessage() + " No se cargó ningún dato.");
                 }
             }
 
-            String[] lineasSensores = persistencia.leeRegistros("sensores.txt");
-            for (int i = 0; i < lineasSensores.length; i++) {
-                String[] partes = lineasSensores[i].split(PersistenciaTexto.SEPARADOR);
-                if (partes.length != 6) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo sensores.txt: formato inválido. No se cargó ningún dato.");
+            // Comprobar el formato de mediciones antes de procesar sensores.
+            for (int i = 0; i < lineasMed.length; i++) {
+                if (lineasMed[i].length != 4) {
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo mediciones.txt: formato inválido. No se cargó ningún dato.");
                 }
+            }
+            // Procesar los sensores por separado para evitar conflictos de tipo activo.
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            List<String[]> activarFinal = new ArrayList<>();
+            for (int i = 0; i < lineasSen.length; i++) {
+                String[] v = lineasSen[i];
+                if (v.length != 6) throw new MeteorologiaException("Línea " + (i + 1)
+                        + " del archivo sensores.txt: formato inválido. No se cargó ningún dato.");
                 try {
-                    String codEstacion = partes[0].trim();
-                    String codSensor = partes[1].trim();
-                    TipoSensor tipo = TipoSensor.valueOf(partes[2].trim());
-                    String marca = partes[3].trim();
-                    String modelo = partes[4].trim();
-                    Estado estadoGuardado = Estado.valueOf(partes[5].trim());
+                    String codEst = v[0].trim();
+                    String codSen = v[1].trim();
+                    TipoSensor tipo = TipoSensor.valueOf(v[2].trim());
+                    Estado estado = Estado.valueOf(v[5].trim());
+                    // Durante la lectura, desactivar un sensor anterior del mismo tipo.
+                    // Al final solo se activan los sensores que indique el archivo.
+                    EstacionMeteorologica estacion = findEstacion(codEst)
+                            .orElseThrow(() -> new MeteorologiaException(
+                                    "No existe una estación con el código " + codEst + "."));
+                    for (Sensor anterior : estacion.getSensores()) {
+                        if (anterior.getTipo() == tipo && anterior.getEstado() == Estado.ACTIVO) {
+                            cambiaEstadoSensor(codEst, anterior.getCodigo(), Estado.INACTIVO);
+                        }
+                    }
+                    instalaSensor(codSen, v[3].trim(), v[4].trim(), tipo, codEst);
 
-                    instalaSensor(codSensor, marca, modelo, tipo, codEstacion);
-                    sensoresConEstado.add(new String[]{codEstacion, codSensor, estadoGuardado.name()});
-                } catch (Exception e) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo sensores.txt: " + (e.getMessage() != null ? e.getMessage() : "Error") + " No se cargó ningún dato.");
+                    // Solo registrar las mediciones de este sensor, conservando el número de línea real.
+                    for (int j = 0; j < lineasMed.length; j++) {
+                        String[] m = lineasMed[j];
+                        if (m.length == 4 && m[0].trim().equals(codEst)
+                                && m[1].trim().equals(codSen)) {
+                            try {
+                                LocalDateTime fecha = LocalDateTime.parse(m[2].trim(), fmt);
+                                registraMedicion(fecha, Float.parseFloat(m[3].trim()), codEst, codSen);
+                            } catch (RuntimeException | MeteorologiaException e) {
+                                throw new MeteorologiaException("Línea " + (j + 1)
+                                        + " del archivo mediciones.txt: " + e.getMessage()
+                                        + " No se cargó ningún dato.");
+                            }
+                        }
+                    }
+                    cambiaEstadoSensor(codEst, codSen, Estado.INACTIVO);
+                    if (estado == Estado.ACTIVO) {
+                        activarFinal.add(new String[]{codEst, codSen, String.valueOf(i + 1)});
+                    }
+                } catch (RuntimeException | MeteorologiaException e) {
+                    if (e instanceof MeteorologiaException
+                            && e.getMessage().contains("del archivo mediciones.txt")) throw (MeteorologiaException) e;
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo sensores.txt: " + e.getMessage() + " No se cargó ningún dato.");
                 }
             }
-
-            String[] lineasMediciones = persistencia.leeRegistros("mediciones.txt");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            for (int i = 0; i < lineasMediciones.length; i++) {
-                String[] partes = lineasMediciones[i].split(PersistenciaTexto.SEPARADOR);
-                if (partes.length != 4) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo mediciones.txt: formato inválido. No se cargó ningún dato.");
+            // Validar las mediciones no asociadas a un sensor existente y las mal formadas.
+            for (int i = 0; i < lineasMed.length; i++) {
+                String[] m = lineasMed[i];
+                if (m.length != 4 || findSensor(m[0].trim(), m[1].trim()).isEmpty()) {
+                    throw new MeteorologiaException("Línea " + (i + 1)
+                            + " del archivo mediciones.txt: formato inválido o sensor inexistente. No se cargó ningún dato.");
                 }
+            }
+            for (String[] s : activarFinal) {
                 try {
-                    String codEstacion = partes[0].trim();
-                    String codSensor = partes[1].trim();
-                    LocalDateTime fechaHora = LocalDateTime.parse(partes[2].trim(), formatter);
-                    float valor = Float.parseFloat(partes[3].trim());
-
-                    registraMedicion(fechaHora, valor, codEstacion, codSensor);
-                } catch (Exception e) {
-                    throw new MeteorologiaException("Línea " + (i + 1) + " del archivo mediciones.txt: " + (e.getMessage() != null ? e.getMessage() : "Error") + " No se cargó ningún dato.");
+                    cambiaEstadoSensor(s[0], s[1], Estado.ACTIVO);
+                } catch (MeteorologiaException e) {
+                    throw new MeteorologiaException("Línea " + s[2]
+                            + " del archivo sensores.txt: " + e.getMessage() + " No se cargó ningún dato.");
                 }
             }
-
-            for (String[] sc : sensoresConEstado) {
-                if (sc[2].equals("INACTIVO")) {
-                    cambiaEstadoSensor(sc[0], sc[1], Estado.INACTIVO);
-                }
-            }
-
         } catch (MeteorologiaException e) {
             regiones.clear();
             estaciones.clear();
             throw e;
+        } catch (IllegalArgumentException e) {
+            regiones.clear();
+            estaciones.clear();
+            throw new MeteorologiaException(e.getMessage() + " No se cargó ningún dato.");
         }
     }
 
-
     public void guardaDatos() throws MeteorologiaException {
+
         if (regiones.isEmpty() && estaciones.isEmpty()) {
-            throw new MeteorologiaException("No existen datos para guardar.");
+            throw new MeteorologiaException(
+                    "No existen datos para guardar."
+            );
         }
 
         List<String> lineasRegiones = new ArrayList<>();
@@ -213,25 +247,69 @@ public class InstitutoMeteorologia {
         List<String> lineasEstaciones = new ArrayList<>();
         List<String> lineasSensores = new ArrayList<>();
         List<String> lineasMediciones = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
         for (Region r : regiones) {
-            lineasRegiones.add(r.getCodigo() + PersistenciaTexto.SEPARADOR + r.getNombre());
+
+            lineasRegiones.add(
+                    r.getCodigo() + PersistenciaTexto.SEPARADOR +
+                            r.getNombre()
+            );
+
             for (Comuna c : r.getComunas()) {
-                lineasComunas.add(r.getCodigo() + PersistenciaTexto.SEPARADOR + c.getCodigo() + PersistenciaTexto.SEPARADOR + c.getNombre());
+
+                lineasComunas.add(
+                        r.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                c.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                c.getNombre()
+                );
+
                 for (EstacionMeteorologica est : c.getEstaciones()) {
-                    lineasEstaciones.add(est.getCodigo() + PersistenciaTexto.SEPARADOR + est.getNombre() + PersistenciaTexto.SEPARADOR +
-                            est.getLongitud() + PersistenciaTexto.SEPARADOR + est.getLatitud() + PersistenciaTexto.SEPARADOR +
-                            est.getAltitud() + PersistenciaTexto.SEPARADOR + r.getCodigo() + PersistenciaTexto.SEPARADOR + c.getCodigo());
+
+                    // Obtener coordenadas con getPosicion()
+                    String posicion = est.getPosicion();
+
+                    String[] coordenadas = posicion
+                            .replace("(", "")
+                            .replace(" m)", "")
+                            .split(";");
+
+                    String longitud = coordenadas[0].trim();
+                    String latitud = coordenadas[1].trim();
+                    String altitud = coordenadas[2].trim();
+
+                    lineasEstaciones.add(
+                            est.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                    est.getNombre() + PersistenciaTexto.SEPARADOR +
+                                    longitud + PersistenciaTexto.SEPARADOR +
+                                    latitud + PersistenciaTexto.SEPARADOR +
+                                    altitud + PersistenciaTexto.SEPARADOR +
+                                    r.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                    c.getCodigo()
+                    );
 
                     for (Sensor s : est.getSensores()) {
-                        lineasSensores.add(est.getCodigo() + PersistenciaTexto.SEPARADOR + s.getCodigo() + PersistenciaTexto.SEPARADOR +
-                                s.getTipo() + PersistenciaTexto.SEPARADOR + s.getMarca() + PersistenciaTexto.SEPARADOR +
-                                s.getModelo() + PersistenciaTexto.SEPARADOR + s.getEstado());
+
+                        lineasSensores.add(
+                                est.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                        s.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                        s.getTipo() + PersistenciaTexto.SEPARADOR +
+                                        s.getMarca() + PersistenciaTexto.SEPARADOR +
+                                        s.getModelo() + PersistenciaTexto.SEPARADOR +
+                                        s.getEstado()
+                        );
 
                         for (Medicion m : s.getMediciones()) {
-                            lineasMediciones.add(est.getCodigo() + PersistenciaTexto.SEPARADOR + s.getCodigo() + PersistenciaTexto.SEPARADOR +
-                                    m.getFechaHora().format(formatter) + PersistenciaTexto.SEPARADOR + m.getValor());
+
+                            lineasMediciones.add(
+                                    est.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                            s.getCodigo() + PersistenciaTexto.SEPARADOR +
+                                            m.getFechaHora().format(formatter) +
+                                            PersistenciaTexto.SEPARADOR +
+                                            m.getValor()
+                            );
                         }
                     }
                 }
@@ -239,50 +317,81 @@ public class InstitutoMeteorologia {
         }
 
         PersistenciaTexto p = PersistenciaTexto.getInstance();
-        p.escribeRegistros("regiones.txt", lineasRegiones.toArray(new String[0]));
-        p.escribeRegistros("comunas.txt", lineasComunas.toArray(new String[0]));
-        p.escribeRegistros("estaciones.txt", lineasEstaciones.toArray(new String[0]));
-        p.escribeRegistros("sensores.txt", lineasSensores.toArray(new String[0]));
-        p.escribeRegistros("mediciones.txt", lineasMediciones.toArray(new String[0]));
+
+        p.escribeRegistros(
+                "regiones.txt",
+                lineasRegiones.toArray(new String[0])
+        );
+
+        p.escribeRegistros(
+                "comunas.txt",
+                lineasComunas.toArray(new String[0])
+        );
+
+        p.escribeRegistros(
+                "estaciones.txt",
+                lineasEstaciones.toArray(new String[0])
+        );
+
+        p.escribeRegistros(
+                "sensores.txt",
+                lineasSensores.toArray(new String[0])
+        );
+
+        p.escribeRegistros(
+                "mediciones.txt",
+                lineasMediciones.toArray(new String[0])
+        );
     }
 
     public String[][] listaRegiones() {
-        List<String[]> lista = new ArrayList<>();
-        for (Region r : regiones) {
-            lista.add(new String[]{String.valueOf(r.getCodigo()), r.getNombre()});
+        String[][] resultado = new String[regiones.size()][4];
+        for (int i = 0; i < regiones.size(); i++) {
+            Region r = regiones.get(i);
+            resultado[i][0] = String.valueOf(r.getCodigo());
+            resultado[i][1] = r.getNombre();
+            resultado[i][2] = String.valueOf(r.getComunas().length);
+            resultado[i][3] = String.valueOf(r.getCantidadEstaciones());
         }
-        return lista.toArray(new String[0][0]);
+        return resultado;
     }
 
     public String[][] listaComunas() {
         List<String[]> lista = new ArrayList<>();
         for (Region r : regiones) {
             for (Comuna c : r.getComunas()) {
-                lista.add(new String[]{String.valueOf(r.getCodigo()), r.getNombre(), String.valueOf(c.getCodigo()), c.getNombre()});
+                lista.add(new String[]{
+                        String.valueOf(c.getCodigo()), c.getNombre(),
+                        r.getNombre(), String.valueOf(c.getEstaciones().length),
+                        String.valueOf(c.getCantidadEstacionesActivas())
+                });
             }
         }
         return lista.toArray(new String[0][0]);
     }
 
-    public String[][] listaEstaciones(int codigoRegion, int codigoComuna) throws MeteorologiaException {
-        Optional<Region> regionOpt = findRegion(codigoRegion);
-        if (!regionOpt.isPresent()) {
-            throw new MeteorologiaException("No existe una región con el código " + codigoRegion + ".");
+    public String[][] listaEstaciones(int codigoRegion, int codigoComuna)
+            throws MeteorologiaException {
+        Region region = findRegion(codigoRegion).orElseThrow(() ->
+                new MeteorologiaException("No existe una región con el código " + codigoRegion + "."));
+        Comuna comuna = region.findComunaById(codigoComuna).orElseThrow(() ->
+                new MeteorologiaException("No existe una comuna con el código " + codigoComuna
+                        + " en la región " + region.getNombre() + "."));
+        EstacionMeteorologica[] estacionesComuna = comuna.getEstaciones();
+        String[][] resultado = new String[estacionesComuna.length][5];
+        for (int i = 0; i < estacionesComuna.length; i++) {
+            EstacionMeteorologica e = estacionesComuna[i];
+            resultado[i][0] = e.getCodigo();
+            resultado[i][1] = e.getNombre();
+            resultado[i][2] = e.getPosicion();
+            resultado[i][3] = e.getEstado().name();
+            int activos = 0;
+            for (Sensor sensor : e.getSensores()) {
+                if (sensor.getEstado() == Estado.ACTIVO) activos++;
+            }
+            resultado[i][4] = String.valueOf(activos);
         }
-        Region region = regionOpt.get();
-
-        Optional<Comuna> comunaOpt = region.findComunaById(codigoComuna);
-        if (!comunaOpt.isPresent()) {
-            throw new MeteorologiaException("No existe una comuna con el código " + codigoComuna + " en la región " + region.getNombre() + ".");
-        }
-        Comuna comuna = comunaOpt.get();
-
-        EstacionMeteorologica[] ests = comuna.getEstaciones();
-        String[][] matriz = new String[ests.length][];
-        for (int i = 0; i < ests.length; i++) {
-            matriz[i] = new String[]{ests[i].getCodigo(), ests[i].getNombre(), ests[i].getEstado().name()};
-        }
-        return matriz;
+        return resultado;
     }
 
     public String[][] listaSensores(String codigoEstacion) throws MeteorologiaException {
@@ -294,10 +403,6 @@ public class InstitutoMeteorologia {
     }
 
     public String[][] listaMediciones(String codEstacion, String codSensor, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        if (fin.isBefore(inicio)) {
-            throw new MeteorologiaException("La fecha y hora de término (" + fin.format(fmt) + ") es anterior a la de inicio (" + inicio.format(fmt) + ").");
-        }
         Optional<EstacionMeteorologica> estOpt = findEstacion(codEstacion);
         if (!estOpt.isPresent()) {
             throw new MeteorologiaException("No existe una estación con el código " + codEstacion + ".");
@@ -307,14 +412,14 @@ public class InstitutoMeteorologia {
         if (!sensorOpt.isPresent()) {
             throw new MeteorologiaException("No existe el sensor " + codSensor + " en la estación " + codEstacion + ".");
         }
-        return est.getMedicionesSensorBetween(codSensor, inicio, fin);
-    }
-
-    public String[] listaResumenMediciones(String codigoEstacion, String codigoSensor, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         if (fin.isBefore(inicio)) {
             throw new MeteorologiaException("La fecha y hora de término (" + fin.format(fmt) + ") es anterior a la de inicio (" + inicio.format(fmt) + ").");
         }
+        return est.getMedicionesSensorBetween(codSensor, inicio, fin);
+    }
+
+    public String[] listaResumenMediciones(String codigoEstacion, String codigoSensor, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
         Optional<EstacionMeteorologica> estOpt = findEstacion(codigoEstacion);
         if (!estOpt.isPresent()) {
             throw new MeteorologiaException("No existe una estación con el código " + codigoEstacion + ".");
@@ -323,6 +428,10 @@ public class InstitutoMeteorologia {
         Optional<Sensor> sensorOpt = est.findSensorById(codigoSensor);
         if (!sensorOpt.isPresent()) {
             throw new MeteorologiaException("No existe el sensor " + codigoSensor + " en la estación " + codigoEstacion + ".");
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        if (fin.isBefore(inicio)) {
+            throw new MeteorologiaException("La fecha y hora de término (" + fin.format(fmt) + ") es anterior a la de inicio (" + inicio.format(fmt) + ").");
         }
         Sensor sensor = sensorOpt.get();
         Optional<ResumenMediciones> resumenOpt = sensor.getResumenBetween(inicio, fin);
@@ -344,13 +453,13 @@ public class InstitutoMeteorologia {
     }
 
     public String[][] listaAlertas(String codigoEstacion, LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        if (fin.isBefore(inicio)) {
-            throw new MeteorologiaException("La fecha y hora de término (" + fin.format(fmt) + ") es anterior a la de inicio (" + inicio.format(fmt) + ").");
-        }
         Optional<EstacionMeteorologica> estOpt = findEstacion(codigoEstacion);
         if (!estOpt.isPresent()) {
             throw new MeteorologiaException("No existe una estación con el código " + codigoEstacion + ".");
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        if (fin.isBefore(inicio)) {
+            throw new MeteorologiaException("La fecha y hora de término (" + fin.format(fmt) + ") es anterior a la de inicio (" + inicio.format(fmt) + ").");
         }
         EstacionMeteorologica est = estOpt.get();
         AlertaMeteorologica[] alertas = est.getAlertasBetween(inicio, fin);

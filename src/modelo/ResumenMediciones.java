@@ -17,10 +17,14 @@ public class ResumenMediciones {
 
         for (Medicion m:mediciones){
             suma+=m.getValor();
-            if(m.getValor()<minTemp.getValor()){
+            if(m.getValor()<minTemp.getValor() ||
+                    (m.getValor()==minTemp.getValor() &&
+                            m.getFechaHora().isBefore(minTemp.getFechaHora()))){
                 minTemp=m;
             }
-            if(m.getValor()>maxTemp.getValor()){
+            if(m.getValor()>maxTemp.getValor() ||
+                    (m.getValor()==maxTemp.getValor() &&
+                            m.getFechaHora().isBefore(maxTemp.getFechaHora()))){
                 maxTemp=m;
             }
         }

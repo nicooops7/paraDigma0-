@@ -41,23 +41,26 @@ public abstract class Sensor {
     public void setEstado(Estado estado){
         this.estado = estado;
     }
-    public EstacionMeteorologica getEstacion(){
-        return estacion;
-    }
-    public List<Medicion> getMediciones(){
-        return mediciones;
+    public Medicion[] getMediciones() {
+        Medicion[] resultado = mediciones.toArray(new Medicion[0]);
+        java.util.Arrays.sort(resultado,
+                java.util.Comparator.comparing(Medicion::getFechaHora));
+        return resultado;
     }
 
     public void addMedicion(LocalDateTime fechaHora, float valor) throws MeteorologiaException {
         if (estado== Estado.INACTIVO){
-            throw new MeteorologiaException("el sensor "+codigo+" se encuentra INACTIVO");
+            throw new MeteorologiaException("El sensor " + codigo + " no está activo.");
         }
-        if (!esValorAdmisible(valor)){
-            throw new MeteorologiaException("el valor "+valor+" "+getUnidad()+" no es admisible para un sensor de tipo "+getTipo());
+        if (!Float.isFinite(valor) || !esValorAdmisible(valor)){
+            throw new MeteorologiaException("El valor " + String.format(java.util.Locale.US, "%.1f", valor) + " " + getUnidad()
+                    + " no es admisible para un sensor de tipo " + getTipo() + ".");
         }
         for (Medicion m : mediciones){
             if (m.getFechaHora().isEqual(fechaHora)){
-                throw new MeteorologiaException("ya existe una medición registrada en la fecha y hora "+fechaHora);
+                throw new MeteorologiaException("El sensor " + codigo + " ya registra una medición el "
+                        + fechaHora.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy 'a las' HH:mm"))
+                        + ".");
             }
         }
         mediciones.add(new Medicion(fechaHora, valor));
@@ -70,7 +73,10 @@ public abstract class Sensor {
                 filtradas.add(m);
             }
         }
-        return filtradas.toArray(new Medicion[0]);
+        Medicion[] resultado = filtradas.toArray(new Medicion[0]);
+        java.util.Arrays.sort(resultado,
+                java.util.Comparator.comparing(Medicion::getFechaHora));
+        return resultado;
     }
 
     public Optional<ResumenMediciones> getResumenBetween(LocalDateTime inicio, LocalDateTime fin) {
