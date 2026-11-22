@@ -59,7 +59,7 @@ public class InterfazUsuario {
         return instancia;
     }
 
-    private void crearRegion(){
+    public void crearRegion(){
         System.out.println("\nCREAR REGIÓN");
         System.out.println("ingrese codigo");
         int codigo = leerEntero("Código: ");
@@ -74,7 +74,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void crearComuna(){
+    public void crearComuna(){
         System.out.println("\nCREAR COMUNA");
         System.out.println(" Ingrese codigo de comuna");
         int codCom = leerEntero("Código: ");
@@ -90,7 +90,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void crearEstacion(){
+    public void crearEstacion(){
         System.out.println("\nCREAR ESTACIÓN METEOROLÓGICA");
         System.out.println("ingrese codigo");
         String cod = leerTexto("Código: ");
@@ -115,7 +115,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarRegiones() {
+    public void listarRegiones() {
         String[][] datos = instituto.listaRegiones();
         if (datos.length == 0) {
             System.out.println("No existen regiones registradas.");
@@ -127,7 +127,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarComunas() {
+    public void listarComunas() {
         String[][] datos = instituto.listaComunas();
         if (datos.length == 0) {
             System.out.println("No existen comunas registradas.");
@@ -141,7 +141,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarEstaciones() {
+    public void listarEstaciones() {
         System.out.println("\nESTACIONES DE UNA COMUNA");
         System.out.print("Código de región: ");
         int codReg = leerEntero("Código de región: ");
@@ -164,7 +164,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarSensores() {
+    public void listarSensores() {
         System.out.println("\nSENSORES DE UNA ESTACIÓN");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
@@ -184,7 +184,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarMediciones() {
+    public void listarMediciones() {
         System.out.println("\nMEDICIONES DE UN SENSOR");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
@@ -214,7 +214,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarResumenMediciones() {
+    public void listarResumenMediciones() {
         System.out.println("\nRESUMEN ESTADÍSTICO DE UN SENSOR");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
