@@ -52,6 +52,36 @@ src/
 datos/             Archivos de texto de importación y meteorologia.dat
 ```
 
+## Archivos de datos
+
+Todos los archivos están en la carpeta `datos/`.
+
+### meteorologia.dat
+
+Archivo binario con todos los datos del sistema guardados mediante serialización de objetos: la lista de regiones y, a través de ellas, sus comunas, estaciones, sensores, mediciones y alertas. Lo escribe **Guardar datos** y lo lee **Cargar datos**. No se edita a mano.
+
+El archivo del repositorio se generó importando los archivos de texto de ejemplo y guardando después los datos.
+
+### Archivos de texto de ejemplo
+
+Los usa **Importar datos de texto**. Están codificados en UTF-8, tienen un registro por línea y separan los campos con `;`. Si una línea tiene un error, no se carga ningún dato y se informa el archivo y el número de línea.
+
+| Archivo | Campos de cada línea | Registros |
+|---|---|---|
+| `regiones.txt` | código de región; nombre | 2 (Ñuble y Biobío) |
+| `comunas.txt` | código de región; código de comuna; nombre | 4 |
+| `estaciones.txt` | código; nombre; longitud; latitud; altitud; código de región; código de comuna | 4 |
+| `sensores.txt` | código de estación; código de sensor; tipo (`TEMPERATURA`, `HUMEDAD`, `PRESION`, `VIENTO` o `PRECIPITACION`); marca; modelo; estado (`ACTIVO` o `INACTIVO`) | 10 |
+| `mediciones.txt` | código de estación; código de sensor; fecha y hora (`dd/MM/yyyy HH:mm`); valor | 40 |
+
+Ejemplo de una línea de `mediciones.txt`:
+
+```
+EST-NUBLE-01;ST-01;20/08/2026 08:00;-6.0
+```
+
+Al importar, las mediciones generan automáticamente las alertas que correspondan.
+
 ## Uso
 
 Al iniciar se abre la ventana principal, que muestra en la parte inferior si el sistema tiene datos registrados. Tiene tres secciones:
