@@ -2,413 +2,249 @@ package vista;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
+import controlador.*;
+import modelo.*;
 
 
 public class InterfazUsuario {
-    Scanner sc = new Scanner(System.in);
+    private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private static InterfazUsuario instancia;
+    private Scanner sc;
     private InstitutoMeteorologia instituto;
 
-    public static void main(String[] args){
-
-        InterfazUsuario interfaz = new InterfazUsuario();
-
-        interfaz.menuPrincipal();
-
-    }
-    private void menuPrincipal(){
-        instituto = new InstitutoMeteorologia();
-        int opcion;
-
-        do{
-            System.out.println("1. Crear región");
-            System.out.println("2. Crear comuna");
-            System.out.println("3. Crear estación meteorológica");
-            System.out.println("4. Instalar sensor");
-            System.out.println("5. Registrar medición");
-            System.out.println("6. Generar listados");
-            System.out.println("7. Salir");
-
-            opcion = sc.nextInt();
-
-            while (opcion < 1 || opcion > 7) {
-
-                System.out.print("Opción inválida. Ingrese nuevamente: ");
-
-                opcion = sc.nextInt();
-                sc.nextLine();
-            }
-
-            switch(opcion){
-                case 1:
-                    crearRegion();
-
-                    break;
-                case 2:
-                    crearComuna();
-
-                    break;
-                case 3:
-                    crearEstacionMeteorologica();
-
-                    break;
-                case 4:
-                    instalarSensor();
-
-                    break;
-                case 5:
-                    registrarMedicion();
-
-                    break;
-                case 6:
-                    menuListados();
-
-                    break;
-                case 7:
-                    System.out.println("Programa FInalizado.");
-                    break;
-            }
-
-        } while (opcion != 7);
-
+    private InterfazUsuario(){
+        sc = new Scanner(System.in);
+        instituto = InstitutoMeteorologia.getInstance();
     }
 
-    private void crearRegion(){
-
-        System.out.println("ingrese codigo");
-        int codigo = sc.nextInt();
-        System.out.println("ingrese nombre");
-        String nombre = sc.next();
-        boolean x = instituto.creaRegion(codigo, nombre);
-        if(x){
-            System.out.println("modelo.Region creada exitosamente..");
-        }else{
-            System.out.println("No se pudo crear la modelo.Region, codigo o nombre ya existe...");
+    private int leerEntero(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            try {
+                return Integer.parseInt(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Ingrese un número entero válido.");
+            }
         }
     }
 
-    private void crearComuna(){
+    private float leerFloat(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            try {
+                float numero = Float.parseFloat(sc.nextLine().trim().replace(',', '.'));
+                if (Float.isFinite(numero)) return numero;
+            } catch (NumberFormatException e) {
+                // Volver a solicitar el número.
+            }
+            System.out.println("Ingrese un número válido.");
+        }
+    }
 
-        System.out.println(" Ingrese codigo");
-        int cod = sc.nextInt();
+    private String leerTexto(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String texto = sc.nextLine().trim();
+            if (!texto.isEmpty() && !texto.contains(";")) return texto;
+            System.out.println("Ingrese un texto no vacío y sin punto y coma.");
+        }
+    }
+
+    public static synchronized InterfazUsuario getInstance(){
+        if (instancia == null) {
+            instancia = new InterfazUsuario();
+        }
+        return instancia;
+    }
+
+    public void crearRegion(){
+        System.out.println("\nCREAR REGIÓN");
+        System.out.println("ingrese codigo");
+        int codigo = leerEntero("Código: ");
         System.out.println("ingrese nombre");
-        String nom = sc.next();
+        String nombre = leerTexto("Nombre: ");
+
+        try{
+            instituto.creaRegion(codigo, nombre);
+            System.out.println(" Región creada exitosamente.");
+        }catch(MeteorologiaException e){
+            System.out.println("> Error: " + e.getMessage());
+        }
+    }
+
+    public void crearComuna(){
+        System.out.println("\nCREAR COMUNA");
+        System.out.println(" Ingrese codigo de comuna");
+        int codCom = leerEntero("Código: ");
+        System.out.println("ingrese nombre");
+        String nom = leerTexto("Nombre: ");
         System.out.println("ingrese Codigo de la región");
-        int codReg = sc.nextInt();
-        boolean x = instituto.creaComuna(cod,nom,codReg);
-        if(x){
-            System.out.println("modelo.Comuna Creada exitosamente..");
-        }else{
-            System.out.println("No se pudo crear la modelo.Comuna, modelo.Region, codigo o nombre ya existe...");
+        int codReg = leerEntero("Código de región: ");
+        try{
+            instituto.creaComuna(codCom,nom,codReg);
+            System.out.println("Comuna creada exitosamente.");
+        }catch(MeteorologiaException e){
+            System.out.println("> Error: " + e.getMessage());
         }
     }
 
-    private void crearEstacionMeteorologica(){
+    public void crearEstacion(){
+        System.out.println("\nCREAR ESTACIÓN METEOROLÓGICA");
         System.out.println("ingrese codigo");
-        String cod = sc.next();
+        String cod = leerTexto("Código: ");
         System.out.println("ingrese nombre");
-        String nom = sc.next();
+        String nom = leerTexto("Nombre: ");
         System.out.println("ingrese longitud");
-        float lon = sc.nextFloat();
+        float lon = leerFloat("Longitud: ");
         System.out.println("ingrese latitud");
-        float lat = sc.nextFloat();
+        float lat = leerFloat("Latitud: ");
         System.out.println("ingrese altitud");
-        float alt = sc.nextFloat();
+        float alt = leerFloat("Altitud: ");
         System.out.println("ingrese codigo de la región");
-        int codReg = sc.nextInt();
+        int codReg = leerEntero("Código de región: ");
         System.out.println("ingrese codigo de la comuna");
-        int codCom = sc.nextInt();
+        int codCom = leerEntero("Código: ");
 
-        boolean x = instituto.creaEstacion(cod,nom,lon,lat,alt,codReg,codCom);
-
-        if(x){
-            System.out.println("Estación creada exitosamente");
-        } else {
-            System.out.println("No se pudo crear la Estación...");
-        }
-    }
-
-    private void instalarSensor() {
-        System.out.println("\nINSTALAR SENSOR");
-        System.out.println("--------------------------------------------------");
-        System.out.print("Código de estación: ");
-        String codEstacion = sc.nextLine();
-        System.out.print("Código de sensor: ");
-        String codSensor = sc.nextLine();
-        System.out.print("Marca: ");
-        String marca = sc.nextLine();
-        System.out.print("Modelo: ");
-        String modelo = sc.nextLine();
-        System.out.print("Tipo de sensor (HUMEDAD, TEMPERATURA, PRESION, VIENTO, PRECIPITACION): ");
-        TipoSensor tipo = TipoSensor.valueOf(sc.nextLine().toUpperCase());
-
-        try {
-            controlador.instalaSensor(codSensor, marca, modelo, tipo, codEstacion);
-            System.out.println("> Sensor instalado correctamente.");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println("> Error: Tipo de sensor no válido.");
-        }
-    }
-
-    private void registrarMedicion() {
-        System.out.println("\nREGISTRAR MEDICIÓN");
-        System.out.println("--------------------------------------------------");
-        System.out.print("Código de estación: ");
-        String codEstacion = sc.nextLine();
-        System.out.print("Código de sensor: ");
-        String codSensor = sc.nextLine();
-        System.out.print("Fecha y hora [dd/MM/yyyy HH:mm]: ");
-        String fechaStr = sc.nextLine();
-        System.out.print("Valor: ");
-        float valor = Float.parseFloat(sc.nextLine());
-
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime fechaHora = LocalDateTime.parse(fechaStr, formatter);
-
-            controlador.registraMedicion(fechaHora, valor, codEstacion, codSensor);
-            System.out.println("> Medición registrada correctamente.");
-        }catch (DateTimeParseException e) {
-            System.out.println("> Error: Formato de fecha u hora incorrecto. Debe ser dd/MM/yyyy HH:mm.");
-        }catch (NumberFormatException e) {
-            System.out.println("> Error: El valor ingresado debe ser un número decimal valido");
-        }catch (MeteorologiaException e) {
+        try{
+            instituto.creaEstacion(cod,nom,lon,lat,alt,codReg,codCom);
+            System.out.println("Estación creada exitosamente.");
+        }catch(MeteorologiaException e){
             System.out.println("> Error: " + e.getMessage());
         }
     }
 
-    private void menuListados(){
-        int opcion= 0;
-        do{
-            System.out.println("GENERAR LISTADOS");
-            System.out.println("================================");
-            System.out.println("1. Listar regiones");
-            System.out.println("2. Listar comunas");
-            System.out.println("3. Listar estaciones meteorológicas");
-            System.out.println("4. Listar sensores");
-            System.out.println("5. Listar mediciones");
-            System.out.println("6. Volver al menú principal");
-            System.out.print("Opción: ");
-            opcion= sc.nextInt();
-
-            switch (opcion) {
-                case 1:
-                    listarRegiones();
-                    break;
-                case 2:
-                    listarComunas();
-                    break;
-                case 3:
-                    listarEstaciones();
-                    break;
-                case 4:
-                    listarSensores();
-                    break;
-                case 5:
-                    listarMediciones();
-                    break;
-                case 6:
-                    System.out.println("Volviendo al menú principal...");
-                    break;
-                default:
-                    System.out.println("Opción inválida. Ingrese un número entre 1 y 6.");
-            }
-        }while (opcion != 6);
-    }
-    private void listarRegiones() {
-        System.out.println("\nREGIONES");
-        System.out.println("------------------------------------------------------------------");
-        String[][] regiones = instituto.listaRegiones();
-        if (regiones == null || regiones.length == 0) {
+    public void listarRegiones() {
+        String[][] datos = instituto.listaRegiones();
+        if (datos.length == 0) {
             System.out.println("No existen regiones registradas.");
             return;
         }
-
-        System.out.printf("%-10s %-25s %-15s %-15s\n", "CÓDIGO", "NOMBRE", "CANT. COMUNAS", "CANT. ESTACIONES");
-        System.out.println("------------------------------------------------------------------");
-        for (String[] fila : regiones) {
-            System.out.printf("%-10s %-25s %-15s %-15s\n", fila[0], fila[1], fila[2], fila[3]);
+        System.out.printf("%-10s %-20s %-12s %-12s%n", "CÓDIGO", "REGIÓN", "COMUNAS", "ESTACIONES");
+        for (String[] r : datos) {
+            System.out.printf("%-10s %-20s %-12s %-12s%n", r[0], r[1], r[2], r[3]);
         }
     }
-    private void listarComunas(){
-        System.out.println("\nCOMUNAS");
-        System.out.println("---------------------------------------------------------------------------------------------------");
 
-        String[][] comunas = instituto.listaComunas();
-        if (comunas == null || comunas.length == 0) {
+    public void listarComunas() {
+        String[][] datos = instituto.listaComunas();
+        if (datos.length == 0) {
             System.out.println("No existen comunas registradas.");
             return;
         }
-
-        System.out.printf("%-10s %-25s %-20s %-20s %-25s\n", "CÓDIGO", "NOMBRE", "NOMBRE REGIÓN", "CANT. ESTACIONES", "CANT. ESTACIONES ACTIVAS");
-        System.out.println("---------------------------------------------------------------------------------------------------");
-        for (String[] fila : comunas) {
-            System.out.printf("%-10s %-25s %-20s %-20s %-25s\n", fila[0], fila[1], fila[2], fila[3], fila[4]);
+        System.out.printf("%-10s %-20s %-20s %-12s %-12s%n",
+                "CÓDIGO", "COMUNA", "REGIÓN", "ESTACIONES", "ACTIVAS");
+        for (String[] c : datos) {
+            System.out.printf("%-10s %-20s %-20s %-12s %-12s%n",
+                    c[0], c[1], c[2], c[3], c[4]);
         }
     }
 
-    private void listarEstaciones() {
-        System.out.print("Ingrese código de región: ");
-        int codRegion = sc.nextInt();
-        sc.nextLine();
-
-        System.out.print("Ingrese código de comuna: ");
-        int codComuna = sc.nextInt();
-        sc.nextLine();
-
-
-        String[][] datos = instituto.listaEstaciones(codRegion, codComuna);
-
-        System.out.println("Estaciones de la modelo.Comuna " + codComuna);
-
-        if (datos.length == 0) {
-            System.out.println("> No existen estaciones registradas para esta búsqueda.");
-        } else {
-            System.out.println("-------------------------------------------------------------------------------------");
-
-            System.out.printf("%-15s %-20s %-30s %-10s %s", "CÓDIGO", "NOMBRE", "UBICACIÓN", "ESTADO", "SENSORES OPERATIVOS");
-
-            for (int i = 0; i < datos.length; i++) {
-                System.out.printf("%-15s %-20s %-30s %-10s %s", datos[i][0], datos[i][1], datos[i][2], datos[i][3], datos[i][4]);
+    public void listarEstaciones() {
+        System.out.println("\nESTACIONES DE UNA COMUNA");
+        System.out.print("Código de región: ");
+        int codReg = leerEntero("Código de región: ");
+        System.out.print("Código de comuna: ");
+        int codCom = leerEntero("Código: ");
+        try {
+            String[][] datos = instituto.listaEstaciones(codReg, codCom);
+            if (datos.length == 0) {
+                System.out.println("La comuna no registra estaciones.");
+                return;
             }
-            System.out.println("-------------------------------------------------------------------------------------");
-        }
-    }
-
-    private void listarSensores() {
-        System.out.print("Ingrese código de la estación: ");
-        String codEstacion = sc.nextLine();
-
-
-        String[][] datos = instituto.listaSensores(codEstacion);
-
-        System.out.println("Sensores de " + codEstacion);
-
-        if (datos.length == 0) {
-            System.out.println("> No existen sensores registrados para esta estación.");
-        } else {
-            System.out.println("--------------------------------------------------------------------------------------------------------");
-
-            System.out.printf("%-10s %-15s %-15s %-10s %-10s %-10s %s", "CÓDIGO", "TIPO", "MARCA", "MODELO", "UNIDAD", "ESTADO", "ÚLTIMA MEDICIÓN");
-
-            for (int i = 0; i < datos.length; i++) {
-                System.out.printf("%-10s %-15s %-15s %-10s %-10s %-10s %s", datos[i][0], datos[i][1], datos[i][2], datos[i][3], datos[i][4], datos[i][5], datos[i][6]);
+            System.out.printf("%-18s %-24s %-32s %-12s %s%n",
+                    "CÓDIGO", "NOMBRE", "POSICIÓN", "ESTADO", "SENSORES ACTIVOS");
+            for (String[] e : datos) {
+                System.out.printf("%-18s %-24s %-32s %-12s %s%n",
+                        e[0], e[1], e[2], e[3], e[4]);
             }
-            System.out.println("--------------------------------------------------------------------------------------------------------");
+        } catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
         }
     }
 
-    private void listarMediciones() {
-        System.out.print("Ingrese código de la estación: ");
-        String codEstacion = sc.nextLine();
-        System.out.print("Ingrese código del sensor: ");
-        String codSensor = sc.nextLine();
-        System.out.print("Ingrese fecha y hora de inicio [dd/MM/yyyy HH:mm]: ");
-        String strInicio = sc.nextLine();
-        System.out.print("Ingrese fecha y hora de fin [dd/MM/yyyy HH:mm]: ");
-        String strFin = sc.nextLine();
+    public void listarSensores() {
+        System.out.println("\nSENSORES DE UNA ESTACIÓN");
+        System.out.print("Código de estación: ");
+        String codEst = leerTexto("Código de estación: ");
 
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        LocalDateTime inicio = LocalDateTime.parse(strInicio, formatter);
-        LocalDateTime fin = LocalDateTime.parse(strFin, formatter);
-
-
-        String[][] datos = instituto.listaMediciones(codEstacion, codSensor, inicio, fin);
-
-        System.out.println("Mediciones del modelo.Sensor " + codSensor);
-        System.out.println("Período: " + strInicio + " a " + strFin);
-
-        if (datos.length == 0) {
-            System.out.println("> No existen mediciones para este sensor en el período indicado.");
-        } else {
-            System.out.println("--------------------------------------------------");
-
-            System.out.printf("%-15s %-10s %-10s %s", "FECHA", "HORA", "VALOR", "UNIDAD");
-
-            for (int i = 0; i < datos.length; i++) {
-                System.out.printf("%-15s %-10s %-10s %s", datos[i][0], datos[i][1], datos[i][2], datos[i][3]);
+        try {
+            String[][] datos = instituto.listaSensores(codEst);
+            if (datos.length == 0) {
+                System.out.println("La estacion " + codEst + " no registra sensores.");
+                return;
             }
-            System.out.println("--------------------------------------------------");
+            System.out.printf("%-12s %-20s %-15s %-15s %-10s %-12s %s%n", "CÓDIGO", "TIPO", "MARCA", "MODELO", "UNIDAD", "ESTADO", "ÚLTIMA MEDICIÓN");
+            for (String[] s : datos) {
+                System.out.printf("%-12s %-20s %-15s %-15s %-10s %-12s %s%n", s[0], s[1], s[2], s[3], s[4], s[5], s[6]);
+            }
+        } catch (MeteorologiaException e) {
+            System.out.println("> Error: " + e.getMessage());
         }
     }
-    private void listarResumenMediciones() {
+
+    public void listarMediciones() {
+        System.out.println("\nMEDICIONES DE UN SENSOR");
+        System.out.print("Código de estación: ");
+        String codEst = leerTexto("Código de estación: ");
+        System.out.print("Código de sensor: ");
+        String codSensor = leerTexto("Código de sensor: ");
+        System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
+        String inicioStr = sc.nextLine();
+        System.out.print("Fin [dd/MM/yyyy HH:mm]: ");
+        String finStr = sc.nextLine();
+
+        try {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime inicio = LocalDateTime.parse(inicioStr, fmt);
+            LocalDateTime fin = LocalDateTime.parse(finStr, fmt);
+
+            String[][] datos = instituto.listaMediciones(codEst, codSensor, inicio, fin);
+            if (datos.length == 0) {
+                System.out.println("El sensor " + codSensor + " no registra mediciones en el período indicado.");
+                return;
+            }
+            System.out.printf("%-14s %-9s %-12s %s%n", "FECHA", "HORA", "VALOR", "UNIDAD");
+            for (String[] m : datos) {
+                System.out.printf("%-14s %-9s %-12s %s%n", m[0], m[1], m[2], m[3]);
+            }
+        } catch (Exception e) {
+            System.out.println("> Error: " + e.getMessage());
+        }
+    }
+
+    public void listarResumenMediciones() {
         System.out.println("\nRESUMEN ESTADÍSTICO DE UN SENSOR");
-        System.out.println("--------------------------------------------------");
         System.out.print("Código de estación: ");
-        String codEstacion = sc.nextLine();
-        System.out.print("Código de sensor  : ");
-        String codSensor = sc.nextLine();
+        String codEst = leerTexto("Código de estación: ");
+        System.out.print("Código de sensor: ");
+        String codSensor = leerTexto("Código de sensor: ");
         System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
         String inicioStr = sc.nextLine();
-        System.out.print("Fin    [dd/MM/yyyy HH:mm]: ");
+        System.out.print("Fin [dd/MM/yyyy HH:mm]: ");
         String finStr = sc.nextLine();
 
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime inicio = LocalDateTime.parse(inicioStr, formatter);
-            LocalDateTime fin = LocalDateTime.parse(finStr, formatter);
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime inicio = LocalDateTime.parse(inicioStr, fmt);
+            LocalDateTime fin = LocalDateTime.parse(finStr, fmt);
 
-            String[] R = controlador.listaResumenMediciones(codEstacion, codSensor, inicio, fin);
-
-            if (R.length == 0) {
-                System.out.println("> El sensor "+codSensor+" de la estación "+codEstacion+" no registra mediciones en el período indicado");
+            String[] res = instituto.listaResumenMediciones(codEst, codSensor, inicio, fin);
+            if (res.length == 0) {
+                System.out.println("El sensor " + codSensor + " no registra mediciones en el período indicado.");
                 return;
             }
-
-            System.out.println("\nRESUMEN ESTADÍSTICO DEL SENSOR " + codSensor + " (" + codEstacion + ")");
-            System.out.println("--------------------------------------------------------------------------------");
+            System.out.println("\nRESUMEN ESTADÍSTICO DEL SENSOR " + codSensor + " (" + codEst + ")");
             System.out.println("Período: " + inicioStr + " a " + finStr);
-            System.out.printf("Tipo de sensor       : %s\n", R[0]);
-            System.out.printf("Cantidad de mediciones: %s\n", R[1]);
-            System.out.printf("Mínimo               : %-10s (%s)\n", R[2], R[3]);
-            System.out.printf("Máximo               : %-10s (%s)\n", R[4], R[5]);
-            System.out.printf("Promedio             : %s\n", R[6]);
-
-        } catch (DateTimeParseException e) {
-            System.out.println("> Error: Formato de fecha incorrecto.");
-        } catch (MeteorologiaException e) {
+            System.out.println("Tipo de sensor     : " + res[0]);
+            System.out.println("Cantidad de mediciones : " + res[2]);
+            System.out.println("Mínimo             : " + res[3] + " " + res[1] + " (" + res[4] + ")");
+            System.out.println("Máximo             : " + res[5] + " " + res[1] + " (" + res[6] + ")");
+            System.out.println("Promedio           : " + res[7] + " " + res[1]);
+        } catch (Exception e) {
             System.out.println("> Error: " + e.getMessage());
         }
     }
-    private void listarAlertas() {
-        System.out.println("\nALERTAS DE UNA ESTACIÓN");
-        System.out.println("--------------------------------------------------");
-        System.out.print("Código de estación: ");
-        String codEstacion = sc.nextLine();
-        System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
-        String inicioStr = sc.nextLine();
-        System.out.print("Fin    [dd/MM/yyyy HH:mm]: ");
-        String finStr = sc.nextLine();
 
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime inicio = LocalDateTime.parse(inicioStr, formatter);
-            LocalDateTime fin = LocalDateTime.parse(finStr, formatter);
-
-            String[][] A = controlador.listaAlertas(codEstacion, inicio, fin);
-
-            if (A.length == 0) {
-                System.out.println("> La estación " + codEstacion + " no registra alertas en el período indicado.");
-                return;
-            }
-
-            System.out.println("\nALERTAS DE LA ESTACIÓN " + codEstacion);
-            System.out.println("--------------------------------------------------------------------------------");
-            System.out.println("Período: " + inicioStr + " a " + finStr);
-            System.out.printf("%-12s %-8s %-8s %-25s %-12s %-10s\n", "FECHA", "HORA", "SENSOR", "FENÓMENO", "VALOR", "NIVEL");
-
-            for (String[] fila : A) {
-                System.out.printf("%-12s %-8s %-8s %-25s %-12s %-10s\n", fila[0], fila[1], fila[2], fila[3], fila[4], fila[5]);
-            }
-
-        } catch (DateTimeParseException e) {
-            System.out.println("> Error: Formato de fecha incorrecto.");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        }
-    }
 }
