@@ -11,7 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class EstacionMeteorologica {
+public class EstacionMeteorologica implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");

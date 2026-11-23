@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class Comuna implements Serializable {
-    private static final long serialversionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private int codigo;
     private String nombre;

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class AlertaMeteorologica implements Serializable {
-    private static final long serialversionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final LocalDateTime fechaHora;
     private final float valor;
