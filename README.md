@@ -1,30 +1,81 @@
-# Sistema de Información Meteorológica - Avance 1
+# Sistema de Información Meteorológica - Avance 3
 
 ## Equipo
-* **Nombre del Equipo:** [ParaDigma0-]
-* **Integrantes:**
-  1. [Esteban Pena]
-  2. [Joab Vergara]
-  3. [Nicolás Parra]
 
-## Instrucciones de Ejecución
+* **Nombre del equipo:** ParaDigma0-
+* **Integrantes y responsabilidades:**
 
-El sistema es una aplicación de consola interactiva escrita en Java. No requiere dependencias externas ni bibliotecas adicionales.
+| Integrante | Responsabilidad |
+|---|---|
+| Esteban Pena | Capa controlador: `InstitutoMeteorologia`, persistencia de objetos y de texto, `Main` |
+| Joab Vergara | Capa modelo (serialización y streams), `InterfazUsuario` y `VentanaPrincipal` |
+| Nicolás Parra | Diálogos modales (`VentanaInstalarSensor`, `VentanaRegistrarMedicion`, `VentanaCambiarEstadoSensor`, `VentanaListadoAlertas`), README y coordinación de Git |
 
-### Opción 1: Ejecución desde IntelliJ IDEA (Recomendado)
-1. Clona este repositorio desde GitHub en tu equipo local:
-   https://github.com/nicooops7/paraDigma0-.git
+* **Repositorio:** https://github.com/nicooops7/paraDigma0-
+* **Tablero Trello:** _(agregar enlace)_
 
+## Requisitos
 
-## Menú de Opciones
+* JDK 25.
+* No usa bibliotecas externas: la interfaz gráfica está hecha con Swing, que viene incluido en el JDK.
 
-La aplicación interactúa con el usuario a través del siguiente menú principal:
+## Ejecución
 
-1. **Crear región:** Registra una nueva región en el sistema mediante su código numérico y nombre.
-2. **Crear comuna:** Asocia una nueva comuna a una región existente utilizando el código de la región padre.
-3. **Crear estación meteorológica:** Crea una nueva estación activa en una comuna, definiendo su ubicación (latitud, longitud y altitud).
-4. **Instalar sensor:** Añade un sensor especializado a una estación operativa, asignando su tipo, marca y modelo.
-5. **Registrar medición:** Ingresa un valor climático validado para un sensor específico en una fecha y hora determinadas.
-6. **Generar listados:** Despliega un submenú para visualizar tablas ordenadas de las regiones, comunas, estaciones, sensores y el historial de mediciones.
-7. **Salir:** Cierra el sistema.
-   
+### Desde IntelliJ IDEA (recomendado)
+
+1. Clona el repositorio:
+   ```
+   git clone https://github.com/nicooops7/paraDigma0-.git
+   ```
+2. Abre la carpeta del proyecto en IntelliJ IDEA y configura el SDK del proyecto en JDK 25 (*File → Project Structure → Project*).
+3. Ejecuta la clase `vista.Main`.
+
+### Desde la terminal
+
+Desde la raíz del proyecto:
+
+```
+javac -encoding UTF-8 -d out src/controlador/*.java src/modelo/*.java src/vista/*.java
+java -cp out vista.Main
+```
+
+La aplicación debe ejecutarse desde la raíz del proyecto, porque los archivos de datos se leen desde la carpeta `datos/`.
+
+## Estructura del proyecto
+
+```
+src/
+├── controlador/   InstitutoMeteorologia (Singleton), MeteorologiaException, persistencia
+├── modelo/        Region, Comuna, EstacionMeteorologica, Sensor y sus subclases,
+│                  Medicion, AlertaMeteorologica, ResumenMediciones, enums
+└── vista/         Main, VentanaPrincipal, diálogos modales e InterfazUsuario
+datos/             Archivos de texto de importación y meteorologia.dat
+```
+
+## Uso
+
+Al iniciar se abre la ventana principal, que muestra en la parte inferior si el sistema tiene datos registrados. Tiene tres secciones:
+
+### Registro
+
+* **Crear región**, **Crear comuna** y **Crear estación meteorológica:** se ingresan los datos por consola.
+* **Instalar sensor:** diálogo para elegir la estación, el tipo de sensor, la marca y el modelo.
+* **Registrar medición:** diálogo para elegir la estación y el sensor (el combo de sensores depende de la estación elegida), la fecha y hora (`dd/MM/yyyy HH:mm`) y el valor.
+* **Cambiar estado de sensor:** diálogo para elegir la estación, el sensor y el nuevo estado.
+
+### Datos
+
+* **Cargar datos:** carga el sistema desde `datos/meteorologia.dat` (solo si no hay datos registrados).
+* **Importar datos de texto:** carga los archivos `regiones.txt`, `comunas.txt`, `estaciones.txt`, `sensores.txt` y `mediciones.txt` de la carpeta `datos/`.
+* **Guardar datos:** guarda todo el sistema en `datos/meteorologia.dat`.
+
+### Listados
+
+Se elige el listado en el combo y se presiona **Generar listado**:
+
+* **Alertas de una estación:** diálogo con una tabla de solo lectura con las alertas de la estación en un período.
+* **Regiones**, **Comunas**, **Estaciones de una comuna**, **Sensores de una estación**, **Mediciones de un sensor** y **Resumen estadístico de un sensor:** se muestran por consola.
+
+**Salir** pregunta si se desean guardar los datos antes de cerrar.
+
+Los errores se informan en un diálogo con el mensaje correspondiente.
