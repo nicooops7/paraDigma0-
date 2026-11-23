@@ -1,5 +1,8 @@
 package modelo;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class ResumenMediciones {
     private final int cantidad;
     private final float promedio;
@@ -11,26 +14,12 @@ public class ResumenMediciones {
             throw new IllegalArgumentException("sin datos");
         }
         this.cantidad=mediciones.length;
-        Medicion minTemp=mediciones[0];
-        Medicion maxTemp=mediciones[0];
-        float suma=0.0f;
 
-        for (Medicion m:mediciones){
-            suma+=m.getValor();
-            if(m.getValor()<minTemp.getValor() ||
-                    (m.getValor()==minTemp.getValor() &&
-                            m.getFechaHora().isBefore(minTemp.getFechaHora()))){
-                minTemp=m;
-            }
-            if(m.getValor()>maxTemp.getValor() ||
-                    (m.getValor()==maxTemp.getValor() &&
-                            m.getFechaHora().isBefore(maxTemp.getFechaHora()))){
-                maxTemp=m;
-            }
-        }
-        this.minimo=minTemp;
-        this.maximo=maxTemp;
-        this.promedio=suma/this.cantidad;
+        Comparator<Medicion> porValor = Comparator.comparing(Medicion::getValor).thenComparing(Medicion::getFechaHora);Comparator<Medicion> porValorDesempateAntigua = Comparator.comparing(Medicion::getValor).thenComparing(Medicion::getFechaHora, Comparator.reverseOrder());
+
+        this.minimo = Arrays.stream(mediciones).min(porValor).orElseThrow();
+        this.maximo = Arrays.stream(mediciones).max(porValorDesempateAntigua).orElseThrow();
+        this.promedio = (float) Arrays.stream(mediciones).mapToDouble(Medicion::getValor).average().orElse(0.0);
     }
     public int getCantidad(){return cantidad;}
     public float getPromedio(){return promedio;}

@@ -1,10 +1,13 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Comuna {
+public class Comuna implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private int codigo;
     private String nombre;
     private List<EstacionMeteorologica> estaciones;
@@ -13,43 +16,36 @@ public class Comuna {
     public Comuna(int codigo, String nombre, Region region){
         this.codigo=codigo;
         this.nombre=nombre;
-        this.region=region;
-        this.estaciones=new ArrayList<EstacionMeteorologica>();
+        this.region = region;
+        this.estaciones = new ArrayList<>();
     }
     public int getCodigo(){
         return codigo;
     }
+
     public String getNombre(){
         return nombre;
     }
+
     public void addEstacion(EstacionMeteorologica estacion){
         estaciones.add(estacion);
     }
-    public Optional<EstacionMeteorologica> findEstacionById(String codigo) {
-        for (EstacionMeteorologica e : estaciones) {
-            if (e.getCodigo().equals(codigo)) {
-                return Optional.of(e);
-            }
-        }
-        return Optional.empty();
+
+    public Optional<EstacionMeteorologica> findEstacionById(String codigo){
+        return estaciones.stream().filter(e -> e.getCodigo().equals(codigo)).findFirst();
     }
+
     public Region getRegion(){
         return region;
     }
-    public EstacionMeteorologica[] getEstaciones() {
-        EstacionMeteorologica[] estaci = new EstacionMeteorologica[estaciones.size()];
-        for (int i = 0; i < this.estaciones.size(); i++) {
-            estaci[i] = this.estaciones.get(i);
-        }
-        return estaci;
+
+
+    public EstacionMeteorologica[] getEstaciones(){
+        return estaciones.toArray(new EstacionMeteorologica[0]);
     }
+
     public int getCantidadEstacionesActivas(){
-        int activas = 0;
-        for (EstacionMeteorologica e : estaciones) {
-            if (e.getEstado() == Estado.ACTIVO) {
-                activas++;
-            }
-        }
-        return activas;
+        return (int) estaciones.stream().filter(e -> e.getEstado() == Estado.ACTIVO).count();
     }
+
 }

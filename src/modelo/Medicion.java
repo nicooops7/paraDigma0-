@@ -1,16 +1,17 @@
 package modelo;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-public class Medicion {
+public class Medicion implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final LocalDateTime fechaHora;
     private final float valor;
 
-    public Medicion(LocalDateTime fechaHora, float valor) {
-
+    public Medicion(LocalDateTime fechaHora, float valor){
         this.fechaHora = fechaHora;
         this.valor = valor;
     }
@@ -58,4 +59,5 @@ public class Medicion {
 
         return fechaFormateada + "; " + valorFormateado;
     }
+
 }

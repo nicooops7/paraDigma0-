@@ -8,6 +8,8 @@ import modelo.*;
 
 
 public class InterfazUsuario {
+    private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     private static InterfazUsuario instancia;
     private Scanner sc;
     private InstitutoMeteorologia instituto;
@@ -57,69 +59,7 @@ public class InterfazUsuario {
         return instancia;
     }
 
-
-    public void menuPrincipal(){
-        int opcion;
-
-        do{
-            System.out.println("1. Crear región");
-            System.out.println("2. Crear comuna");
-            System.out.println("3. Crear estación meteorológica");
-            System.out.println("4. Instalar sensor");
-            System.out.println("5. Registrar medición");
-            System.out.println("6. Cambiar estado de sensor");
-            System.out.println("7. Generar listados");
-            System.out.println("8. Cargar datos");
-            System.out.println("9. Guardar datos");
-            System.out.println("10. Salir");
-
-            opcion = leerEntero("Opción: ");
-
-            switch(opcion){
-                case 1:
-                    crearRegion();
-
-                    break;
-                case 2:
-                    crearComuna();
-
-                    break;
-                case 3:
-                    crearEstacionMeteorologica();
-
-                    break;
-                case 4:
-                    instalarSensor();
-
-                    break;
-                case 5:
-                    registrarMedicion();
-
-                    break;
-                case 6:
-                    cambiarEstadoSensor();
-                    break;
-                case 7:
-                    menuListados();
-                    break;
-                case 8:
-                    cargarDatos();
-                    break;
-                case 9:
-                    guardarDatos();
-                    break;
-                case 10:
-                    if(salir()) return;
-                    break;
-                default:
-                    System.out.println("Opción inválida. ingrese una opción entre 1 y 10.");
-            }
-
-        } while (true);
-
-    }
-
-    private void crearRegion(){
+    public void crearRegion(){
         System.out.println("\nCREAR REGIÓN");
         System.out.println("ingrese codigo");
         int codigo = leerEntero("Código: ");
@@ -134,7 +74,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void crearComuna(){
+    public void crearComuna(){
         System.out.println("\nCREAR COMUNA");
         System.out.println(" Ingrese codigo de comuna");
         int codCom = leerEntero("Código: ");
@@ -144,13 +84,13 @@ public class InterfazUsuario {
         int codReg = leerEntero("Código de región: ");
         try{
             instituto.creaComuna(codCom,nom,codReg);
-            System.out.println("Comuna creada exitodamente.");
+            System.out.println("Comuna creada exitosamente.");
         }catch(MeteorologiaException e){
             System.out.println("> Error: " + e.getMessage());
         }
     }
 
-    private void crearEstacionMeteorologica(){
+    public void crearEstacion(){
         System.out.println("\nCREAR ESTACIÓN METEOROLÓGICA");
         System.out.println("ingrese codigo");
         String cod = leerTexto("Código: ");
@@ -175,161 +115,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void instalarSensor(){
-        System.out.println("\nINSTALAR SENSOR");
-        System.out.println("Ingrese codigo de estación");
-        String codEst = leerTexto("Código de estación: ");
-        System.out.print("Tipo [1 Temp. 2 Hum. 3 Presión 4 Viento 5 Precip.]: ");
-        int tOpt = leerEntero("Tipo de sensor: ");
-        TipoSensor tipo = switch (tOpt) {
-            case 1 -> TipoSensor.TEMPERATURA;
-            case 2 -> TipoSensor.HUMEDAD;
-            case 3 -> TipoSensor.PRESION;
-            case 4 -> TipoSensor.VIENTO;
-            case 5 -> TipoSensor.PRECIPITACION;
-            default -> null;
-        };
-
-        if(tipo == null){
-            System.out.println("Error: Tipo de sensor inválido.");
-            return;
-        }
-
-        System.out.print("Código de sensor: ");
-        String codSensor = leerTexto("Código de sensor: ");
-        System.out.print("Marca: ");
-        String marca = leerTexto("Marca: ");
-        System.out.print("Modelo: ");
-        String modelo = leerTexto("Modelo: ");
-
-        try {
-            instituto.instalaSensor(codSensor, marca, modelo, tipo, codEst);
-            System.out.println("> Sensor instalado correctamente.");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        }
-
-    }
-
-    private void registrarMedicion(){
-        System.out.println("\nREGISTRAR MEDICIÓN");
-        System.out.println("Ingrese codigo de Estacion");
-        String codEstacion = leerTexto("Código de estación: ");
-
-        System.out.print("Ingrese Fecha y hora (dd/MM/yyyy HH:mm): ");
-        String fechaStr = sc.nextLine();
-
-        System.out.println("Ingrese valor");
-        float valor = leerFloat("Valor: ");
-
-        System.out.println("Ingrese codigo de Sensor");
-        String codSensor = leerTexto("Código de sensor: ");
-
-        try{
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime fechaHora = LocalDateTime.parse(fechaStr, formatter);
-            instituto.registraMedicion(fechaHora, valor, codEstacion, codSensor);
-            System.out.println("Medición registrada correctamente.");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        } catch (java.time.format.DateTimeParseException e) {
-            System.out.println("> Error: Fecha y hora inválidas. Use dd/MM/yyyy HH:mm.");
-        }
-    }
-
-    private void cambiarEstadoSensor(){
-        System.out.println("\nCAMBIAR ESTADO DE SENSOR");
-        System.out.print("Código de estación: ");
-        String codEst = leerTexto("Código de estación: ");
-        System.out.print("Código de sensor: ");
-        String codSensor = leerTexto("Código de sensor: ");
-        System.out.print("Nuevo estado [1 ACTIVO 2 INACTIVO]: ");
-        int optEstado = leerEntero("Estado: ");
-        if (optEstado != 1 && optEstado != 2) {
-            System.out.println("> Error: Estado inválido.");
-            return;
-        }
-        Estado estado = (optEstado == 1) ? Estado.ACTIVO : Estado.INACTIVO;
-
-        try {
-            instituto.cambiaEstadoSensor(codEst, codSensor, estado);
-            System.out.println("Estado del sensor " + codSensor + " actualizado a " + estado + ".");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        }
-    }
-
-    private void cargarDatos(){
-        System.out.println("\nCARGAR DATOS");
-        try{
-            instituto.cargaDatos();
-            System.out.println("Datos cargados correctamente desde la carpeta datos/.");
-        }catch(MeteorologiaException e){
-            System.out.println("> Error: " + e.getMessage());
-        }
-    }
-
-    private void guardarDatos() {
-        System.out.println("\nGUARDAR DATOS");
-        try {
-            instituto.guardaDatos();
-            System.out.println("> Datos guardados correctamente en la carpeta datos/.");
-        } catch (MeteorologiaException e) {
-            System.out.println("> Error: " + e.getMessage());
-        }
-    }
-
-    private boolean salir() {
-        System.out.print("¿Desea guardar los datos antes de salir? [S/N]: ");
-        String respuesta = sc.nextLine().trim();
-        if (respuesta.equalsIgnoreCase("S")) {
-            try {
-                instituto.guardaDatos();
-                System.out.println("> Datos guardados correctamente en la carpeta datos/.");
-                System.out.println("> Fin del programa.");
-                return true;
-            } catch (MeteorologiaException e) {
-                System.out.println("> Error al guardar: " + e.getMessage());
-                System.out.println("Volviendo al menú principal para evitar pérdida de datos.");
-                return false;
-            }
-        } else {
-            System.out.println("> Fin del programa.");
-            return true;
-        }
-    }
-
-    private void menuListados() {
-        int opcion;
-        do {
-            System.out.println("\nGENERAR LISTADOS");
-            System.out.println("1. Regiones");
-            System.out.println("2. Comunas");
-            System.out.println("3. Estaciones de una comuna");
-            System.out.println("4. Sensores de una estación");
-            System.out.println("5. Mediciones de un sensor");
-            System.out.println("6. Resumen estadístico de un sensor");
-            System.out.println("7. Alertas de una estación");
-            System.out.println("8. Volver al menú principal");
-            System.out.print("Opción: ");
-
-            opcion = leerEntero("Opción: ");
-
-            switch (opcion) {
-                case 1 -> listarRegiones();
-                case 2 -> listarComunas();
-                case 3 -> listarEstaciones();
-                case 4 -> listarSensores();
-                case 5 -> listarMediciones();
-                case 6 -> listarResumenMediciones();
-                case 7 -> listarAlertas();
-                case 8 -> { return; }
-                default -> System.out.println("Opción inválida.");
-            }
-        } while (true);
-    }
-
-    private void listarRegiones() {
+    public void listarRegiones() {
         String[][] datos = instituto.listaRegiones();
         if (datos.length == 0) {
             System.out.println("No existen regiones registradas.");
@@ -341,7 +127,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarComunas() {
+    public void listarComunas() {
         String[][] datos = instituto.listaComunas();
         if (datos.length == 0) {
             System.out.println("No existen comunas registradas.");
@@ -355,7 +141,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarEstaciones() {
+    public void listarEstaciones() {
         System.out.println("\nESTACIONES DE UNA COMUNA");
         System.out.print("Código de región: ");
         int codReg = leerEntero("Código de región: ");
@@ -378,7 +164,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarSensores() {
+    public void listarSensores() {
         System.out.println("\nSENSORES DE UNA ESTACIÓN");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
@@ -398,7 +184,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarMediciones() {
+    public void listarMediciones() {
         System.out.println("\nMEDICIONES DE UN SENSOR");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
@@ -428,7 +214,7 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarResumenMediciones() {
+    public void listarResumenMediciones() {
         System.out.println("\nRESUMEN ESTADÍSTICO DE UN SENSOR");
         System.out.print("Código de estación: ");
         String codEst = leerTexto("Código de estación: ");
@@ -461,34 +247,4 @@ public class InterfazUsuario {
         }
     }
 
-    private void listarAlertas() {
-        System.out.println("\nALERTAS DE UNA ESTACIÓN");
-        System.out.print("Código de estación: ");
-        String codEst = leerTexto("Código de estación: ");
-        System.out.print("Inicio [dd/MM/yyyy HH:mm]: ");
-        String inicioStr = sc.nextLine();
-        System.out.print("Fin [dd/MM/yyyy HH:mm]: ");
-        String finStr = sc.nextLine();
-
-        try {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            LocalDateTime inicio = LocalDateTime.parse(inicioStr, fmt);
-            LocalDateTime fin = LocalDateTime.parse(finStr, fmt);
-
-            String[][] datos = instituto.listaAlertas(codEst, inicio, fin);
-            if (datos.length == 0) {
-                System.out.println("La estación " + codEst + " no registra alertas en el período indicado.");
-                return;
-            }
-            System.out.println("\nALERTAS DE LA ESTACIÓN " + codEst);
-            System.out.println("Período: " + inicioStr + " a " + finStr);
-            System.out.printf("%-12s %-8s %-10s %-25s %-15s %-10s\n", "FECHA", "HORA", "SENSOR", "FENÓMENO", "VALOR", "NIVEL");
-            for (String[] a : datos) {
-                System.out.printf("%-12s %-8s %-10s %-25s %-15s %-10s\n", a[0], a[1], a[2], a[3], a[4] + " " + a[5], a[6]);
-            }
-        } catch (Exception e) {
-            System.out.println("> Error: " + e.getMessage());
-        }
-    }
 }
-

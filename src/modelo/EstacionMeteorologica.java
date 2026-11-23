@@ -2,13 +2,22 @@ package modelo;
 
 import controlador.MeteorologiaException;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class EstacionMeteorologica {
+public class EstacionMeteorologica implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
+
     private String codigo;
     private String nombre;
     private float longitud;
@@ -16,6 +25,7 @@ public class EstacionMeteorologica {
     private float altitud;
     private Estado estado;
     private Comuna comuna;
+
     private List<Sensor> sensores;
     private List<AlertaMeteorologica> alertas;
 
@@ -26,27 +36,25 @@ public class EstacionMeteorologica {
         this.longitud = lon;
         this.latitud = lat;
         this.altitud = alt;
-        this.estado= Estado.ACTIVO;
+        this.estado = Estado.ACTIVO;
         this.comuna = comuna;
-        this.sensores=new ArrayList<>();
-        this.alertas= new ArrayList<>();
-
+        this.sensores = new ArrayList<>();
+        this.alertas = new ArrayList<>();
     }
-    public void instalaSensor(String codigo, String marca, String modelo,
-                              TipoSensor tipo) throws MeteorologiaException {
+    public void instalaSensor(String codigo, String marca, String modelo, TipoSensor tipo) throws MeteorologiaException{
         if (estado == Estado.INACTIVO) {
             throw new MeteorologiaException("La estación " + this.codigo + " no está activa.");
         }
-        for (Sensor s : sensores) {
+        Optional<Sensor> conflicto = sensores.stream()
+                .filter(s -> s.getCodigo().equals(codigo)
+                        || (s.getEstado() == Estado.ACTIVO && s.getTipo() == tipo))
+                .findFirst();
+        if (conflicto.isPresent()) {
+            Sensor s = conflicto.get();
             if (s.getCodigo().equals(codigo)) {
-                throw new MeteorologiaException("La estación " + this.codigo
-                        + " ya tiene un sensor con el código " + codigo + ".");
+                throw new MeteorologiaException("La estación " + this.codigo + " ya tiene un sensor con el código " + codigo + ".");
             }
-            if (s.getEstado() == Estado.ACTIVO && s.getTipo() == tipo) {
-                throw new MeteorologiaException("La estación " + this.codigo
-                        + " ya tiene un sensor ACTIVO de tipo " + tipo
-                        + " (" + s.getCodigo() + ").");
-            }
+            throw new MeteorologiaException("La estación " + this.codigo + " ya tiene un sensor ACTIVO de tipo " + tipo + " (" + s.getCodigo() + ").");
         }
 
         Sensor nuevo;
@@ -61,23 +69,16 @@ public class EstacionMeteorologica {
         sensores.add(nuevo);
     }
 
-    public void cambiaEstadoSensor(String codigoSensor, Estado nuevoEstado)
-            throws MeteorologiaException {
+    public void cambiaEstadoSensor(String codigoSensor, Estado nuevoEstado) throws MeteorologiaException {
         Sensor sensor = findSensorById(codigoSensor).orElseThrow(() ->
-                new MeteorologiaException("No existe el sensor " + codigoSensor
-                        + " en la estación " + codigo + "."));
+                new MeteorologiaException("No existe el sensor " + codigoSensor + " en la estación " + codigo + "."));
         if (sensor.getEstado() == nuevoEstado) {
-            throw new MeteorologiaException("El sensor " + codigoSensor
-                    + " ya se encuentra en estado " + nuevoEstado + ".");
+            throw new MeteorologiaException("El sensor " + codigoSensor + " ya se encuentra en estado " + nuevoEstado + ".");
         }
         if (nuevoEstado == Estado.ACTIVO) {
-            for (Sensor otro : sensores) {
-                if (otro != sensor && otro.getEstado() == Estado.ACTIVO
-                        && otro.getTipo() == sensor.getTipo()) {
-                    throw new MeteorologiaException("No es posible activar el sensor "
-                            + codigoSensor + ": la estación ya tiene activo el sensor "
-                            + otro.getCodigo() + " de tipo " + sensor.getTipo() + ".");
-                }
+            Optional<Sensor> otro = sensores.stream().filter(o -> o != sensor && o.getEstado() == Estado.ACTIVO && o.getTipo() == sensor.getTipo()).findFirst();
+            if (otro.isPresent()) {
+                throw new MeteorologiaException("No es posible activar el sensor " + codigoSensor + ": la estación ya tiene activo el sensor " + otro.get().getCodigo() + " de tipo " + sensor.getTipo() + ".");
             }
         }
         sensor.setEstado(nuevoEstado);
@@ -106,19 +107,8 @@ public class EstacionMeteorologica {
         }
     }
     public AlertaMeteorologica[] getAlertasBetween(LocalDateTime inicio, LocalDateTime fin) {
-        List<AlertaMeteorologica> filtradas = new ArrayList<>();
-        for (AlertaMeteorologica a : alertas) {
-            if ((a.getFechaHora().isEqual(inicio) || a.getFechaHora().isAfter(inicio)) &&
-                    (a.getFechaHora().isEqual(fin) || a.getFechaHora().isBefore(fin))) {
-                filtradas.add(a);
-            }
-        }
-        AlertaMeteorologica[] resultado = filtradas.toArray(new AlertaMeteorologica[0]);
-        java.util.Arrays.sort(resultado,
-                java.util.Comparator.comparing(AlertaMeteorologica::getFechaHora));
-        return resultado;
+        return alertas.stream().filter(a -> !a.getFechaHora().isBefore(inicio) && !a.getFechaHora().isAfter(fin)).sorted(Comparator.comparing(AlertaMeteorologica::getFechaHora)).toArray(AlertaMeteorologica[]::new);
     }
-
 
     @Override
     public String toString(){
@@ -126,89 +116,26 @@ public class EstacionMeteorologica {
     }
 
     public String[][] getResumenSensores() {
+        return sensores.stream().map(s -> new String[] {s.getCodigo(), s.getTipo().toString(), s.getMarca(), s.getModelo(), s.getUnidad(), s.getEstado().toString(), descripcionUltimaMedicion(s)}).toArray(String[][]::new);
+    }
 
-        if (sensores.isEmpty()) {
-            return new String[0][0];
+    private String descripcionUltimaMedicion(Sensor sensor) {
+        Medicion[] mediciones = sensor.getMediciones();
+        if (mediciones.length == 0) {
+            return "Sin mediciones";
         }
-
-        String[][] matriz = new String[sensores.size()][7];
-
-        DateTimeFormatter formatoFecha =
-                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-        for (int i = 0; i < sensores.size(); i++) {
-
-            Sensor s = sensores.get(i);
-
-            matriz[i][0] = s.getCodigo();
-            matriz[i][1] = s.getTipo().toString();
-            matriz[i][2] = s.getMarca();
-            matriz[i][3] = s.getModelo();
-            matriz[i][4] = s.getUnidad();
-            matriz[i][5] = s.getEstado().toString();
-
-            Medicion[] mediciones = s.getMediciones();
-
-            if (mediciones.length > 0) {
-
-                // La última medición es la más reciente
-                Medicion ultima = mediciones[mediciones.length - 1];
-
-                String fechaStr =
-                        ultima.getFechaHora().format(formatoFecha);
-
-                matriz[i][6] =
-                        fechaStr + " " +
-                                ultima.getValor() + " " +
-                                s.getUnidad();
-
-            } else {
-
-                matriz[i][6] = "Sin mediciones";
-            }
-        }
-
-        return matriz;
+        // La última medición es la más reciente
+        Medicion ultima = mediciones[mediciones.length - 1];
+        return ultima.getFechaHora().format(FORMATO_FECHA_HORA) + " " + ultima.getValor() + " " + sensor.getUnidad();
     }
 
     public String[][] getMedicionesSensorBetween(String codigoSensor, LocalDateTime inicio, LocalDateTime fin){
-        Sensor sensorEncontrado= null;
-        for (Sensor s : sensores) {
-            if (s.getCodigo().equalsIgnoreCase(codigoSensor)) {
-                sensorEncontrado = s;
-                break;
-            }
-        }
-        if (sensorEncontrado == null) {
-            return new String[0][0];
-        }
-
-        Medicion[] mediciones= sensorEncontrado.getMedicionesBetween(inicio, fin);
-        if (mediciones== null||mediciones.length == 0) {
-            return new String[0][0];
-        }
-
-        DateTimeFormatter formatoFecha= DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter formatoHora= DateTimeFormatter.ofPattern("HH:mm");
-        String[][] matriz= new String[mediciones.length][4];
-
-        for (int i = 0; i < mediciones.length; i++) {
-            Medicion m= mediciones[i];
-            matriz[i][0]= m.getFechaHora().format(formatoFecha);
-            matriz[i][1]= m.getFechaHora().format(formatoHora);
-            matriz[i][2]= String.valueOf(m.getValor());
-            matriz[i][3]= sensorEncontrado.getUnidad();
-        }
-        return matriz;
+        return findSensorById(codigoSensor)
+                .map(s -> Arrays.stream(s.getMedicionesBetween(inicio, fin)).map(m -> new String[] {m.getFechaHora().format(FORMATO_FECHA), m.getFechaHora().format(FORMATO_HORA), String.valueOf(m.getValor()), s.getUnidad()}).toArray(String[][]::new)).orElse(new String[0][0]);
     }
 
     public Optional<Sensor> findSensorById(String codigo) {
-        for (Sensor s : sensores) {
-            if (s.getCodigo().equalsIgnoreCase(codigo)) {
-                return Optional.of(s);
-            }
-        }
-        return Optional.empty();
+        return sensores.stream().filter(s -> s.getCodigo().equalsIgnoreCase(codigo)).findFirst();
     }
 
     public String getCodigo() {
@@ -232,3 +159,4 @@ public class EstacionMeteorologica {
     }
 
 }
+
