@@ -107,8 +107,6 @@ public class VentanaPrincipal extends JFrame {
         return boton;
     }
 
-    // ------------------------------------------------------------------ comportamiento
-
     private void actualizarEstado() {
         lblEstado.setText(instituto.existenDatos()
                 ? "Estado: el sistema tiene datos registrados."
@@ -179,7 +177,6 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    /** Sí guarda y finaliza (si falla, informa el error y no finaliza); No finaliza sin guardar; Cancelar vuelve. */
     private void salir() {
         if (instituto.existenDatos()) {
             int respuesta = JOptionPane.showConfirmDialog(this, "¿Desea guardar los datos antes de salir?",
