@@ -12,7 +12,7 @@
 | Nicolás Parra | Diálogos modales (`VentanaInstalarSensor`, `VentanaRegistrarMedicion`, `VentanaCambiarEstadoSensor`, `VentanaListadoAlertas`), README y coordinación de Git |
 
 * **Repositorio:** https://github.com/nicooops7/paraDigma0-
-* **Tablero Trello:** _(agregar enlace)_
+* **Tablero Trello:** https://trello.com/invite/b/6ae342aede8c46f3660830bc/ATTI79646616403bca02222df6212b10cec75469EA7E/paradigma0-avance-3-proyecto-poo
 
 ## Requisitos
 
